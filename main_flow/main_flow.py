@@ -9,6 +9,8 @@ import utils
 
 import numpy as np
 
+HEBREW_NLP_END_POINT = 'https://hebrew-nlp.co.il/service/Morphology/Normalize'
+
 requests_cache.install_cache(cache_name='hebrew_roots', backend='sqlite')
 
 
@@ -30,7 +32,7 @@ def steamimfy(table):
             'text': row[0]
         }
 
-        response = requests.post('https://hebrew-nlp.co.il/service/Morphology/Normalize', json=request).json()
+        response = requests.post(HEBREW_NLP_END_POINT, json=request).json()
         flatten_lst_of_words = [item for sublist in response for item in sublist]
         row[0] = flatten_lst_of_words
     return steamedTable
