@@ -390,7 +390,6 @@ def predict(X, y, parameters):
     """
 
     m = X.shape[1]
-    n = len(parameters) // 2  # number of layers in the neural network
     p = np.zeros((1, m))
 
     # Forward propagation
@@ -403,9 +402,6 @@ def predict(X, y, parameters):
         else:
             p[0, i] = 0
 
-    # print results
-    # print ("predictions: " + str(p))
-    # print ("true labels: " + str(y))
-    print("Accuracy: " + str(np.sum((p == y) / m)))
+    print("Accuracy: " + str(np.sum((p == y)) / m))
 
     return p

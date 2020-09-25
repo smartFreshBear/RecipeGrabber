@@ -18,7 +18,7 @@ SAMPLE_RANGE_NAME = 'A:C'
 """ TODO address + sheets from training set"""
 
 
-def load_all_training_examples(should_print = False):
+def load_all_training_examples(should_print = False, ignore_un_tagged = True):
     service = get_clinet_to_training_set()
 
     # Call the Sheets API
@@ -33,6 +33,8 @@ def load_all_training_examples(should_print = False):
         for row in values:
             if len(row) == 3:
                 print('%s, %s, %s \n' % (row[0], row[1], row[2]))
+    if ignore_un_tagged:
+        return [v for v in values if len(v) == 3 and v[1] != '?' and v[2] != '?']
     return values
 
 

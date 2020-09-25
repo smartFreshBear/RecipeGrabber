@@ -1,14 +1,12 @@
-# import asyncio
-# from pyppeteer import launch
-
 import urllib.request
 import time
-
 
 import urllib.request
 from bs4 import BeautifulSoup
 
-SEPERATOR_TOLORANCE = 4
+MAX_SIZE_FOR_TRAINING_SET = 40
+
+SEPERATOR_TOLORANCE = 2
 
 I = 4
 
@@ -46,8 +44,7 @@ def get_text_from_url(url , retries = 20):
                 separator_tolerance = separator_tolerance - 1
 
             if text_result == '' and separator_tolerance == 0:
-                if next_para_to_add != '':
-                    result_paragraph.append(next_para_to_add)
+                insert_text(next_para_to_add, result_paragraph)
                 next_para_to_add = ''
                 separator_tolerance = SEPERATOR_TOLORANCE
 
@@ -60,3 +57,14 @@ def get_text_from_url(url , retries = 20):
             return get_text_from_url(url, --retries)
         else:
             raise
+
+
+def insert_text(next_para_to_add, result_paragraph):
+    if next_para_to_add != '':
+        if len(next_para_to_add.split(' ')) > MAX_SIZE_FOR_TRAINING_SET:
+            index_with_newline = next_para_to_add.find('\n')
+            insert_text(next_para_to_add[0:index_with_newline], result_paragraph)
+            insert_text(next_para_to_add[index_with_newline + 1], result_paragraph)
+
+
+        result_paragraph.append(next_para_to_add)

@@ -1,7 +1,13 @@
+from json import JSONDecodeError
+
 import data_loader
 
 import requests
 import requests_cache
+
+import sched, time
+import pickle
+import threading
 
 
 import copy
@@ -11,8 +17,29 @@ import numpy as np
 
 HEBREW_NLP_END_POINT = 'https://hebrew-nlp.co.il/service/Morphology/Normalize'
 
-requests_cache.install_cache(cache_name='hebrew_roots', backend='sqlite')
+requests_cache.install_cache(cache_name='hebrew_roots', backend='sqlite', expire_after=60*60*24*100)
 
+scheduler = sched.scheduler(time.time, time.sleep)
+
+def load_cache_from_disk():
+    try:
+        with open('data.pkl', 'rb') as handle:
+            global from_word_to_steam_cache
+            from_word_to_steam_cache = pickle.load(handle)
+    except EOFError:
+            from_word_to_steam_cache = {}
+
+
+
+
+def start_periodic():
+    scheduler.enter(60, 1, periodically_save_cache, (scheduler,))
+    scheduler.run()
+
+def periodically_save_cache(sc):
+    with open('data.pkl', 'wb') as handle:
+        pickle.dump(from_word_to_steam_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    scheduler.enter(60, 1, periodically_save_cache, (sc,))
 
 TOP_WORD_NUM = 150
 EXTRA_FEATURES_NUM = 7
@@ -20,22 +47,49 @@ NEW_LINE_TO_WORD_RATIO_IDX = TOP_WORD_NUM + 1
 DIGITS_TO_WORDS_RATIO_IDX = NEW_LINE_TO_WORD_RATIO_IDX + 1
 
 
+# TODO add new feature numer of words divided by something
+
+
 def steamimfy(table):
     steamedTable = copy.deepcopy(table)
 
     for row in steamedTable:
-        row[0] = row[0].replace('\n', ' ').replace('\r', ' ')
-
-        request = {
-            'token': 'vhZZt9hGGX20aUW',
-            'type': 'SEARCH',
-            'text': row[0]
-        }
-
-        response = requests.post(HEBREW_NLP_END_POINT, json=request).json()
-        flatten_lst_of_words = [item for sublist in response for item in sublist]
-        row[0] = flatten_lst_of_words
+        steam_list_of_words_with_cache(row)
     return steamedTable
+
+
+def steam_list_of_words_with_cache(row):
+    words = row[0].replace('\n', ' ').replace('\r', ' ').replace(',', ' ').\
+        replace('.', ' ').replace(':', ' ').replace('!', ' ').replace('?', ' ').split(' ')
+    words = [word for word in words if word != '']
+    attention_seekers = list(filter(lambda word: word not in from_word_to_steam_cache, words))
+    cached_words = get_already_cached_words(attention_seekers, words)
+    answer_from_api = []
+    try:
+        if attention_seekers != []:
+
+                request = {
+                    'token': 'vhZZt9hGGX20aUW',
+                    'type': 'SEARCH',
+                    'text': ' ## '.join(attention_seekers)
+                }
+
+                response = requests.post(HEBREW_NLP_END_POINT, json=request).json()
+                flatten_lst_of_words = [item for sublist in response for item in sublist]
+                answer_from_api = ''.join(flatten_lst_of_words).split('##')
+                for i in range(len(attention_seekers)):
+                    from_word_to_steam_cache[attention_seekers[i]] = answer_from_api[i]
+
+        row[0] = answer_from_api.extend(cached_words)
+        row[0] = answer_from_api
+    except JSONDecodeError as jsonExc:
+        print("had a problem parsing this row {} \n more info: {}".format(row, jsonExc))
+
+
+def get_already_cached_words(attention_seekers, words):
+    cached_words = [item for item in words if item not in attention_seekers]
+    cached_words = list(map(lambda w: from_word_to_steam_cache[w], cached_words))
+    return cached_words
 
 
 def top_words(tables, top_num):
@@ -101,10 +155,9 @@ def vectorized(steamed_table, top_words, index_of_mark):
 
 
 def enrich_new_lines_words_ratio(vectorized_instr, table):
-
     for i in range(len(table)):
         row = table[i]
-        vectorized_instr[i][NEW_LINE_TO_WORD_RATIO_IDX] = (row[0].count('\n')/len(row[0]))
+        vectorized_instr[i][NEW_LINE_TO_WORD_RATIO_IDX] = (row[0].count('\n') / len(row[0]))
 
 
 def enrich_ratio_word_to_numbers(vectorized_instr, table):
@@ -112,13 +165,11 @@ def enrich_ratio_word_to_numbers(vectorized_instr, table):
         row = table[i]
         amount_of_words = len(row[0].split())
         numbers = [str(s) for s in row[0].split() if s.isdigit()]
-        vectorized_instr[i][DIGITS_TO_WORDS_RATIO_IDX] = count_amount_of_n_digits(numbers, 1)/amount_of_words
-        vectorized_instr[i][DIGITS_TO_WORDS_RATIO_IDX + 1] = count_amount_of_n_digits(numbers, 2)/amount_of_words
-        vectorized_instr[i][DIGITS_TO_WORDS_RATIO_IDX + 2] = count_amount_of_n_digits(numbers, 3)/amount_of_words
-        vectorized_instr[i][DIGITS_TO_WORDS_RATIO_IDX + 3] = count_amount_of_n_digits(numbers, 4)/amount_of_words
-        vectorized_instr[i][DIGITS_TO_WORDS_RATIO_IDX + 4] = count_amount_of_n_digits(numbers, 5)/amount_of_words
-
-
+        vectorized_instr[i][DIGITS_TO_WORDS_RATIO_IDX] = count_amount_of_n_digits(numbers, 1) / amount_of_words
+        vectorized_instr[i][DIGITS_TO_WORDS_RATIO_IDX + 1] = count_amount_of_n_digits(numbers, 2) / amount_of_words
+        vectorized_instr[i][DIGITS_TO_WORDS_RATIO_IDX + 2] = count_amount_of_n_digits(numbers, 3) / amount_of_words
+        vectorized_instr[i][DIGITS_TO_WORDS_RATIO_IDX + 3] = count_amount_of_n_digits(numbers, 4) / amount_of_words
+        vectorized_instr[i][DIGITS_TO_WORDS_RATIO_IDX + 4] = count_amount_of_n_digits(numbers, 5) / amount_of_words
 
 
 def count_amount_of_n_digits(numbers, digit_count):
@@ -139,8 +190,8 @@ def load_data():
     enrich_ratio_word_to_numbers(vectorized_instr, table)
     return vectorized_instr, instruction_lbls, vectorized_ingrid, ingrid_lbls
 
-def example_to_vector(txt):
 
+def example_to_vector(txt):
     single_row_table_with_text = [['txt', 'ing', 'instr'], [txt, '0', '0']]
     steamed = steamimfy(single_row_table_with_text)
     vectorized_instr, instruction_lbls = vectorized(steamed, top_instru_dict, 2)
@@ -154,8 +205,6 @@ def example_to_vector(txt):
     return vectorized_instr, instruction_lbls, vectorized_ingrid, ingrid_lbls
 
 
-
-
 def divided_training_test(examples_matrix, lbls, train_prec):
     size_of_matrix = len(examples_matrix)
     size_of_training = int(size_of_matrix * train_prec)
@@ -165,52 +214,80 @@ def divided_training_test(examples_matrix, lbls, train_prec):
 
     test = examples_matrix[size_of_training + 1: size_of_matrix, :]
     test_lbls = lbls[size_of_training + 1: size_of_matrix]
-    return training, training_lbls , test, test_lbls
+    return training, training_lbls, test, test_lbls
 
 
-def main():
+def train():
     vectorized_instr, instru_lbls, vectorized_ingrid, ingrid_lbls = load_data()
 
     train_x_orig, train_y, test_x_orig, test_y = divided_training_test(vectorized_instr, instru_lbls, 0.8)
 
     layers_dims = [TOP_WORD_NUM + EXTRA_FEATURES_NUM, 24, 12, 1]  # layer model
 
+    global parameters_instructions
     parameters_instructions = utils.L_layer_network.L_layer_model(vectorized_instr.T, instru_lbls.T, layers_dims,
                                                                   learning_rate=0.12,
-                                                                  num_iterations=6600,
+                                                                  num_iterations=4600,
                                                                   print_cost=True)
-
+    global parameters_ingri
     parameters_ingri = utils.L_layer_network.L_layer_model(vectorized_ingrid.T, ingrid_lbls.T, layers_dims,
-                                                                  learning_rate=0.12,
-                                                                  num_iterations=7000,
-                                                                  print_cost=True)
+                                                           learning_rate=0.12,
+                                                           num_iterations=7000,
+                                                           print_cost=True)
 
-    results_training_set_instru = utils.core_methods.predict(vectorized_instr.T, instru_lbls,
-                                                      parameters=parameters_instructions)
+    print_accuracy(ingrid_lbls, instru_lbls, parameters_ingri, parameters_instructions, vectorized_ingrid,
+                   vectorized_instr)
 
-    results_training_set_ingri = utils.core_methods.predict(vectorized_ingrid.T, ingrid_lbls,
-                                                      parameters=parameters_ingri)
-    my_file_handle = open("D:\\ML\\RecipeGrabber\\data_loader\\resources\example.txt", encoding='utf-8')
-    text = my_file_handle.read()
+
+def predict_ingri(text):
     a, b, c, d = example_to_vector(text)
 
     predictions = utils.core_methods.predict(c.T, np.ones((2, 1)),
-                               parameters=parameters_ingri)
+                                             parameters=parameters_ingri)
 
-    print('the text: {} \n is predicted to be ingri = {}'.format(text, predictions[0][1]))
+    predicted = predictions[0][1]
 
-
-
-
-
-    # results_test_set = utils.core_methods.predict(test_x_orig.T, test_y, parameters=parameters_instructions)
+    return predicted
 
 
+def predict_instru(text):
+    a, b, c, d = example_to_vector(text)
+
+    predictions = utils.core_methods.predict(c.T, np.ones((2, 1)),
+                                             parameters=parameters_instructions)
+    predicted = predictions[0][1]
+
+    return predicted
 
 
+def scan_predict(text):
+    print('umama')
 
 
+    #steamfied_text = steamimfy(text)
 
+    #TODO steamify,scan,extract
+
+    #results_test_set = utils.core_methods.predict(test_x_orig.T, test_y, parameters=parameters_instructions)
+
+
+def print_accuracy(ingrid_lbls, instru_lbls, parameters_ingri, parameters_instructions, vectorized_ingrid,
+                   vectorized_instr):
+    results_training_set_instru = utils.core_methods.predict(vectorized_instr.T, instru_lbls.T,
+                                                             parameters=parameters_instructions)
+    results_training_set_ingri = utils.core_methods.predict(vectorized_ingrid.T, ingrid_lbls.T,
+                                                            parameters=parameters_ingri)
+
+
+def run_threaded(job_func):
+    job_thread = threading.Thread(target=job_func)
+    job_thread.start()
+
+
+def main():
+    load_cache_from_disk()
+    train()
+    run_threaded(start_periodic)
 
 
 if __name__ == '__main__':
