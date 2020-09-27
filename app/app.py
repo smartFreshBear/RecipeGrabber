@@ -46,3 +46,7 @@ def find_recipe_in_url():
 if __name__ == '__main__':
 
     app.run()
+
+
+def main():
+    app.run()

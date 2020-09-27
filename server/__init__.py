@@ -1,1 +1,1 @@
-from controller import recipe_contoller
+from app import app
