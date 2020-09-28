@@ -11,6 +11,8 @@ application = app
 
 main_flow.main_flow.main()
 
+print("server is up and running :)")
+
 
 @app.route('/isServerUp')
 def is_server_up():
