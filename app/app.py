@@ -7,6 +7,8 @@ from utils import textExtractor
 
 app = Flask(__name__)
 
+application = app
+
 main_flow.main_flow.main()
 
 
