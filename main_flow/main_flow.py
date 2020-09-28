@@ -228,12 +228,12 @@ def train():
     parameters_instructions = utils.L_layer_network.L_layer_model(vectorized_instr.T, instru_lbls.T, layers_dims,
                                                                   learning_rate=0.12,
                                                                   num_iterations=4600,
-                                                                  print_cost=False)
+                                                                  print_cost=True)
     global parameters_ingri
     parameters_ingri = utils.L_layer_network.L_layer_model(vectorized_ingrid.T, ingrid_lbls.T, layers_dims,
                                                            learning_rate=0.12,
                                                            num_iterations=7000,
-                                                           print_cost=False)
+                                                           print_cost=True)
 
     print_accuracy(ingrid_lbls, instru_lbls, parameters_ingri, parameters_instructions, vectorized_ingrid,
                    vectorized_instr)
