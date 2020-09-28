@@ -6,9 +6,28 @@ from bs4 import BeautifulSoup
 
 MAX_SIZE_FOR_TRAINING_SET = 40
 
-SEPERATOR_TOLORANCE = 2
+SEPERATOR_TOLORANCE = 1
+
+MAX_WORDS_FOR_LINE = 100
 
 I = 4
+
+
+def calibrate(result_paragraph):
+    fixed_paragrapes = []
+    for i in range(len(result_paragraph)):
+        para = result_paragraph[i]
+        lines_in_para = para.split('\n')
+        main_para = ''
+        for line in lines_in_para:
+            if len(line.split(' ')) > MAX_WORDS_FOR_LINE:
+                fixed_paragrapes.append(line)
+            else:
+                main_para += line+'\n'
+        fixed_paragrapes.append(main_para)
+
+    return fixed_paragrapes
+
 
 
 def get_text_from_url(url , retries = 20):
@@ -26,7 +45,7 @@ def get_text_from_url(url , retries = 20):
          script.extract()    # rip it out
 
         # get text
-        paragraphs_raw = soup.get_text('\n\n\n').split('\n\n\n')
+        paragraphs_raw = soup.get_text().split('\n\n\n')
 
         result_paragraph = []
         next_para_to_add = ''
@@ -48,7 +67,7 @@ def get_text_from_url(url , retries = 20):
                 next_para_to_add = ''
                 separator_tolerance = SEPERATOR_TOLORANCE
 
-        return result_paragraph
+        return calibrate(result_paragraph)
     except Exception as exc:
         if retries > 0:
             print("an exception occurred while trying to access url {} trying again \n more details: {}"

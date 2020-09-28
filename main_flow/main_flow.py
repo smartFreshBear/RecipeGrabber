@@ -274,9 +274,9 @@ def predict_instru(text):
 def print_accuracy(ingrid_lbls, instru_lbls, parameters_ingri, parameters_instructions, vectorized_ingrid,
                    vectorized_instr):
     results_training_set_instru = utils.core_methods.predict(vectorized_instr.T, instru_lbls.T,
-                                                             parameters=parameters_instructions)
+                                                             parameters=parameters_instructions, print_accuracy=True)
     results_training_set_ingri = utils.core_methods.predict(vectorized_ingrid.T, ingrid_lbls.T,
-                                                            parameters=parameters_ingri)
+                                                            parameters=parameters_ingri, print_accuracy=True)
 
 
 def run_threaded(job_func):
