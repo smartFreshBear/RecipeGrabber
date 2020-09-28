@@ -220,7 +220,7 @@ def divided_training_test(examples_matrix, lbls, train_prec):
 def train():
     vectorized_instr, instru_lbls, vectorized_ingrid, ingrid_lbls = load_data()
 
-    train_x_orig, train_y, test_x_orig, test_y = divided_training_test(vectorized_instr, instru_lbls, 0.8)
+    # train_x_orig, train_y, test_x_orig, test_y = divided_training_test(vectorized_instr, instru_lbls, 0.8)
 
     layers_dims = [TOP_WORD_NUM + EXTRA_FEATURES_NUM, 24, 12, 1]  # layer model
 
@@ -228,12 +228,12 @@ def train():
     parameters_instructions = utils.L_layer_network.L_layer_model(vectorized_instr.T, instru_lbls.T, layers_dims,
                                                                   learning_rate=0.12,
                                                                   num_iterations=4600,
-                                                                  print_cost=True)
+                                                                  print_cost=False)
     global parameters_ingri
     parameters_ingri = utils.L_layer_network.L_layer_model(vectorized_ingrid.T, ingrid_lbls.T, layers_dims,
                                                            learning_rate=0.12,
                                                            num_iterations=7000,
-                                                           print_cost=True)
+                                                           print_cost=False)
 
     print_accuracy(ingrid_lbls, instru_lbls, parameters_ingri, parameters_instructions, vectorized_ingrid,
                    vectorized_instr)
@@ -260,15 +260,15 @@ def predict_instru(text):
     return predicted
 
 
-def scan_predict(text):
-    print('umama')
-
-
-    #steamfied_text = steamimfy(text)
-
-    #TODO steamify,scan,extract
-
-    #results_test_set = utils.core_methods.predict(test_x_orig.T, test_y, parameters=parameters_instructions)
+# def scan_predict(text):
+#     print('umama')
+#
+#
+#     #steamfied_text = steamimfy(text)
+#
+#     #TODO steamify,scan,extract
+#
+#     #results_test_set = utils.core_methods.predict(test_x_orig.T, test_y, parameters=parameters_instructions)
 
 
 def print_accuracy(ingrid_lbls, instru_lbls, parameters_ingri, parameters_instructions, vectorized_ingrid,
