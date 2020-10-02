@@ -9,7 +9,6 @@ import sched, time
 import pickle
 import threading
 
-
 import copy
 import utils
 
@@ -17,9 +16,10 @@ import numpy as np
 
 HEBREW_NLP_END_POINT = 'https://hebrew-nlp.co.il/service/Morphology/Normalize'
 
-requests_cache.install_cache(cache_name='hebrew_roots', backend='sqlite', expire_after=60*60*24*100)
+requests_cache.install_cache(cache_name='hebrew_roots', backend='sqlite', expire_after=60 * 60 * 24 * 100)
 
 scheduler = sched.scheduler(time.time, time.sleep)
+
 
 def load_cache_from_disk():
     try:
@@ -27,24 +27,26 @@ def load_cache_from_disk():
             global from_word_to_steam_cache
             from_word_to_steam_cache = pickle.load(handle)
     except EOFError:
-            from_word_to_steam_cache = {}
-
-
+        from_word_to_steam_cache = {}
 
 
 def start_periodic():
     scheduler.enter(60, 1, periodically_save_cache, (scheduler,))
     scheduler.run()
 
+
 def periodically_save_cache(sc):
     with open('data.pkl', 'wb') as handle:
         pickle.dump(from_word_to_steam_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
     scheduler.enter(60, 1, periodically_save_cache, (sc,))
 
-TOP_WORD_NUM = 150
-EXTRA_FEATURES_NUM = 7
+
+TOP_WORD_NUM = 170
+EXTRA_FEATURES_NUM = 9
 NEW_LINE_TO_WORD_RATIO_IDX = TOP_WORD_NUM + 1
-DIGITS_TO_WORDS_RATIO_IDX = NEW_LINE_TO_WORD_RATIO_IDX + 1
+QUESTION_MARKS_VALUES_IDX = NEW_LINE_TO_WORD_RATIO_IDX + 1
+EXCLAMATION_MARKS_VALUES_IDX = QUESTION_MARKS_VALUES_IDX + 1
+DIGITS_TO_WORDS_RATIO_IDX = EXCLAMATION_MARKS_VALUES_IDX + 1
 
 
 # TODO add new feature numer of words divided by something
@@ -59,7 +61,7 @@ def steamimfy(table):
 
 
 def steam_list_of_words_with_cache(row):
-    words = row[0].replace('\n', ' ').replace('\r', ' ').replace(',', ' ').\
+    words = row[0].replace('\n', ' ').replace('\r', ' ').replace(',', ' '). \
         replace('.', ' ').replace(':', ' ').replace('!', ' ').replace('?', ' ').split(' ')
     words = [word for word in words if word != '']
     attention_seekers = list(filter(lambda word: word not in from_word_to_steam_cache, words))
@@ -68,17 +70,17 @@ def steam_list_of_words_with_cache(row):
     try:
         if attention_seekers != []:
 
-                request = {
-                    'token': 'vhZZt9hGGX20aUW',
-                    'type': 'SEARCH',
-                    'text': ' ## '.join(attention_seekers)
-                }
+            request = {
+                'token': 'vhZZt9hGGX20aUW',
+                'type': 'SEARCH',
+                'text': ' ## '.join(attention_seekers)
+            }
 
-                response = requests.post(HEBREW_NLP_END_POINT, json=request).json()
-                flatten_lst_of_words = [item for sublist in response for item in sublist]
-                answer_from_api = ''.join(flatten_lst_of_words).split('##')
-                for i in range(len(attention_seekers)):
-                    from_word_to_steam_cache[attention_seekers[i]] = answer_from_api[i]
+            response = requests.post(HEBREW_NLP_END_POINT, json=request).json()
+            flatten_lst_of_words = [item for sublist in response for item in sublist]
+            answer_from_api = ''.join(flatten_lst_of_words).split('##')
+            for i in range(len(attention_seekers)):
+                from_word_to_steam_cache[attention_seekers[i]] = answer_from_api[i]
 
         row[0] = answer_from_api.extend(cached_words)
         row[0] = answer_from_api
@@ -154,16 +156,16 @@ def vectorized(steamed_table, top_words, index_of_mark):
     return training_examples_matrix, labels
 
 
-def enrich_new_lines_words_ratio(vectorized_instr, table):
+def enrich_count_char_for_index(vectorized_instr, table, index, char):
     for i in range(len(table)):
         row = table[i]
-        vectorized_instr[i][NEW_LINE_TO_WORD_RATIO_IDX] = (row[0].count('\n') / len(row[0]))
+        vectorized_instr[i][index] = (row[0].count(char) / int(row[3]))
 
 
 def enrich_ratio_word_to_numbers(vectorized_instr, table):
     for i in range(len(table)):
         row = table[i]
-        amount_of_words = len(row[0].split())
+        amount_of_words = int(row[3])
         numbers = [str(s) for s in row[0].split() if s.isdigit()]
         vectorized_instr[i][DIGITS_TO_WORDS_RATIO_IDX] = count_amount_of_n_digits(numbers, 1) / amount_of_words
         vectorized_instr[i][DIGITS_TO_WORDS_RATIO_IDX + 1] = count_amount_of_n_digits(numbers, 2) / amount_of_words
@@ -183,11 +185,8 @@ def load_data():
     vectorized_instr, instruction_lbls = vectorized(steamed_dict, top_instruction_words, 2)
     vectorized_ingrid, ingrid_lbls = vectorized(steamed_dict, top_ingridiates_words, 1)
 
-    enrich_new_lines_words_ratio(vectorized_ingrid, table)
-    enrich_ratio_word_to_numbers(vectorized_ingrid, table)
+    enrich_tables_vector(table, vectorized_ingrid, vectorized_instr)
 
-    enrich_new_lines_words_ratio(vectorized_instr, table)
-    enrich_ratio_word_to_numbers(vectorized_instr, table)
     return vectorized_instr, instruction_lbls, vectorized_ingrid, ingrid_lbls
 
 
@@ -196,13 +195,26 @@ def example_to_vector(txt):
     steamed = steamimfy(single_row_table_with_text)
     vectorized_instr, instruction_lbls = vectorized(steamed, top_instru_dict, 2)
     vectorized_ingrid, ingrid_lbls = vectorized(steamed, top_ingri_dict, 1)
-    enrich_new_lines_words_ratio(vectorized_ingrid, single_row_table_with_text)
-    enrich_ratio_word_to_numbers(vectorized_ingrid, single_row_table_with_text)
-
-    enrich_new_lines_words_ratio(vectorized_instr, single_row_table_with_text)
-    enrich_ratio_word_to_numbers(vectorized_instr, single_row_table_with_text)
+    enrich_tables_vector(single_row_table_with_text, vectorized_ingrid, vectorized_instr)
 
     return vectorized_instr, instruction_lbls, vectorized_ingrid, ingrid_lbls
+
+
+def calculate_amount_of_words(table):
+    for row in table:
+        row.append(len(row[0].split(' ')))
+
+
+def enrich_tables_vector(table, vectorized_ingrid, vectorized_instr):
+    calculate_amount_of_words(table)
+    enrich_count_char_for_index(vectorized_ingrid, table, NEW_LINE_TO_WORD_RATIO_IDX, '\n')
+    enrich_count_char_for_index(vectorized_ingrid, table, EXCLAMATION_MARKS_VALUES_IDX, '!')
+    enrich_count_char_for_index(vectorized_ingrid, table, QUESTION_MARKS_VALUES_IDX, '?')
+    enrich_ratio_word_to_numbers(vectorized_ingrid, table)
+    enrich_count_char_for_index(vectorized_instr, table, NEW_LINE_TO_WORD_RATIO_IDX, '\n')
+    enrich_count_char_for_index(vectorized_instr, table, EXCLAMATION_MARKS_VALUES_IDX, '!')
+    enrich_count_char_for_index(vectorized_instr, table, QUESTION_MARKS_VALUES_IDX, '?')
+    enrich_ratio_word_to_numbers(vectorized_instr, table)
 
 
 def divided_training_test(examples_matrix, lbls, train_prec):
@@ -226,8 +238,8 @@ def train():
 
     global parameters_instructions
     parameters_instructions = utils.L_layer_network.L_layer_model(vectorized_instr.T, instru_lbls.T, layers_dims,
-                                                                  learning_rate=0.12,
-                                                                  num_iterations=4600,
+                                                                  learning_rate=0.099,
+                                                                  num_iterations=6000,
                                                                   print_cost=True)
     global parameters_ingri
     parameters_ingri = utils.L_layer_network.L_layer_model(vectorized_ingrid.T, ingrid_lbls.T, layers_dims,
@@ -258,17 +270,6 @@ def predict_instru(text):
     predicted = predictions[0][1]
 
     return predicted
-
-
-# def scan_predict(text):
-#     print('umama')
-#
-#
-#     #steamfied_text = steamimfy(text)
-#
-#     #TODO steamify,scan,extract
-#
-#     #results_test_set = utils.core_methods.predict(test_x_orig.T, test_y, parameters=parameters_instructions)
 
 
 def print_accuracy(ingrid_lbls, instru_lbls, parameters_ingri, parameters_instructions, vectorized_ingrid,

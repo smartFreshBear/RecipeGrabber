@@ -1,7 +1,6 @@
 import urllib.request
 import time
 
-import urllib.request
 from bs4 import BeautifulSoup
 
 MAX_SIZE_FOR_TRAINING_SET = 40
@@ -9,6 +8,8 @@ MAX_SIZE_FOR_TRAINING_SET = 40
 SEPERATOR_TOLORANCE = 1
 
 MAX_WORDS_FOR_LINE = 100
+
+MAX_WORDS_FOR_PARA = 120
 
 I = 4
 
@@ -22,7 +23,7 @@ def calibrate(result_paragraph):
         for line in lines_in_para:
             if len(line.split(' ')) > MAX_WORDS_FOR_LINE:
                 fixed_paragrapes.append(line)
-            else:
+            elif line != '':
                 main_para += line+'\n'
         fixed_paragrapes.append(main_para)
 
@@ -30,14 +31,13 @@ def calibrate(result_paragraph):
 
 
 
-def get_text_from_url(url , retries = 20):
+def get_text_from_url(url, retries = 20):
     try:
         user_agent = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.7) Gecko/2009021910 Firefox/3.0.7'
         headers = {'User-Agent': user_agent, }
         request = urllib.request.Request(url, None, headers)
 
         html = urllib.request.urlopen(request).read()
-        # ttt = html2text.html2text(html)
         soup = BeautifulSoup(html)
 
         # kill all script and style elements
@@ -51,6 +51,13 @@ def get_text_from_url(url , retries = 20):
         next_para_to_add = ''
         separator_tolerance = SEPERATOR_TOLORANCE
         for text in paragraphs_raw:
+
+            if len(text.split(' ')) > MAX_WORDS_FOR_PARA:
+                text = text.split(' ')
+                n = MAX_WORDS_FOR_PARA
+                chunked = [' '.join(text[i:i + n]) for i in range(0, len(text), n)]
+                result_paragraph.extend(chunked)
+                continue
 
             lines = (line.strip() for line in text.splitlines())
             # break multi-headlines into a line each
