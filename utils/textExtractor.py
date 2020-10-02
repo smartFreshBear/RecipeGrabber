@@ -31,7 +31,7 @@ def calibrate(result_paragraph):
 
 
 
-def get_text_from_url(url, retries = 20):
+def get_text_from_url(url, retries = 5):
     if retries == 0:
         raise Exception("could not handle request")
     try:
@@ -82,7 +82,8 @@ def get_text_from_url(url, retries = 20):
             print("an exception occurred while trying to access url {} trying again \n more details: {}"
                   .format(url, exc))
             time.sleep(1)
-            return get_text_from_url(url, --retries)
+            retries = retries - 1
+            return get_text_from_url(url, retries)
         else:
             raise
 
