@@ -377,7 +377,7 @@ def update_parameters(parameters, grads, learning_rate):
     return parameters
 
 
-def predict(X, y, parameters, print_accuracy=False):
+def predict(X, parameters):
     """
     This function is used to predict the results of a  L-layer neural network.
 
@@ -401,7 +401,6 @@ def predict(X, y, parameters, print_accuracy=False):
             p[0, i] = 1
         else:
             p[0, i] = 0
-    if print_accuracy:
-        print("Accuracy: " + str(np.sum((p == y)) / m))
+
 
     return p

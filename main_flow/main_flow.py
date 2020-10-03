@@ -206,6 +206,10 @@ def calculate_amount_of_words(table):
 
 
 def enrich_tables_vector(table, vectorized_ingrid, vectorized_instr):
+    #TODO： COUNT AMOUNT OF COMMAS
+    #TODO： COUNT PSIKIM
+    #TODO  COUNT DOTS
+    #TODO COUNT  /
     calculate_amount_of_words(table)
     enrich_count_char_for_index(vectorized_ingrid, table, NEW_LINE_TO_WORD_RATIO_IDX, '\n')
     enrich_count_char_for_index(vectorized_ingrid, table, EXCLAMATION_MARKS_VALUES_IDX, '!')
@@ -237,24 +241,29 @@ def train():
     layers_dims = [TOP_WORD_NUM + EXTRA_FEATURES_NUM, 24, 12, 1]  # layer model
 
     global parameters_instructions
-    parameters_instructions = utils.L_layer_network.L_layer_model(vectorized_instr.T, instru_lbls.T, layers_dims,
-                                                                  learning_rate=0.099,
-                                                                  num_iterations=6000,
-                                                                  print_cost=True)
     global parameters_ingri
-    parameters_ingri = utils.L_layer_network.L_layer_model(vectorized_ingrid.T, ingrid_lbls.T, layers_dims,
+
+
+    rs1,rs2 = 0.70 , 0.70
+    while rs1 < 0.99 or rs2 < 0.99:
+        parameters_instructions = utils.L_layer_network.L_layer_model(vectorized_instr.T, instru_lbls.T, layers_dims,
+                                                                  learning_rate=0.09,
+                                                                  num_iterations=5000,
+                                                                  print_cost=True)
+
+        parameters_ingri = utils.L_layer_network.L_layer_model(vectorized_ingrid.T, ingrid_lbls.T, layers_dims,
                                                            learning_rate=0.12,
                                                            num_iterations=7000,
                                                            print_cost=True)
 
-    print_accuracy(ingrid_lbls, instru_lbls, parameters_ingri, parameters_instructions, vectorized_ingrid,
+        rs1,rs2 = print_accuracy(ingrid_lbls, instru_lbls, parameters_ingri, parameters_instructions, vectorized_ingrid,
                    vectorized_instr)
 
 
 def predict_ingri(text):
     a, b, c, d = example_to_vector(text)
 
-    predictions = utils.core_methods.predict(c.T, np.ones((2, 1)),
+    predictions = utils.core_methods.predict(c.T,
                                              parameters=parameters_ingri)
 
     predicted = predictions[0][1]
@@ -265,7 +274,7 @@ def predict_ingri(text):
 def predict_instru(text):
     a, b, c, d = example_to_vector(text)
 
-    predictions = utils.core_methods.predict(c.T, np.ones((2, 1)),
+    predictions = utils.core_methods.predict(c.T,
                                              parameters=parameters_instructions)
     predicted = predictions[0][1]
 
@@ -273,11 +282,18 @@ def predict_instru(text):
 
 
 def print_accuracy(ingrid_lbls, instru_lbls, parameters_ingri, parameters_instructions, vectorized_ingrid,
-                   vectorized_instr):
-    results_training_set_instru = utils.core_methods.predict(vectorized_instr.T, instru_lbls.T,
-                                                             parameters=parameters_instructions, print_accuracy=True)
-    results_training_set_ingri = utils.core_methods.predict(vectorized_ingrid.T, ingrid_lbls.T,
-                                                            parameters=parameters_ingri, print_accuracy=True)
+                   vectorized_instr ):
+    results_training_set_instru = utils.core_methods.predict(vectorized_instr.T,
+                                                             parameters=parameters_instructions)
+    results_training_set_ingri = utils.core_methods.predict(vectorized_ingrid.T,
+                                                            parameters=parameters_ingri)
+
+    accuracy_instu = np.sum((results_training_set_instru == instru_lbls.T)) / vectorized_instr.T.shape[1]
+    print("Accuracy instru: " + str(accuracy_instu))
+    accuracy_ingri = np.sum((results_training_set_ingri == ingrid_lbls.T)) / vectorized_ingrid.T.shape[1]
+    print("Accuracy ingri: " + str(accuracy_ingri))
+
+    return accuracy_instu, accuracy_ingri
 
 
 def run_threaded(job_func):
