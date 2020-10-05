@@ -42,14 +42,17 @@ def periodically_save_cache(sc):
 
 
 TOP_WORD_NUM = 170
-EXTRA_FEATURES_NUM = 9
+EXTRA_FEATURES_NUM = 14
+
 NEW_LINE_TO_WORD_RATIO_IDX = TOP_WORD_NUM + 1
 QUESTION_MARKS_VALUES_IDX = NEW_LINE_TO_WORD_RATIO_IDX + 1
 EXCLAMATION_MARKS_VALUES_IDX = QUESTION_MARKS_VALUES_IDX + 1
-DIGITS_TO_WORDS_RATIO_IDX = EXCLAMATION_MARKS_VALUES_IDX + 1
-
-
-# TODO add new feature numer of words divided by something
+DOT_MARKS_VALUES_IDX = EXCLAMATION_MARKS_VALUES_IDX + 1
+COMMA_MARKS_VALUES_IDX = DOT_MARKS_VALUES_IDX + 1
+SLASH_MARKS_VALUES_IDX = COMMA_MARKS_VALUES_IDX + 1
+DASH_MARKS_VALUES_IDX = SLASH_MARKS_VALUES_IDX + 1
+PSIKIM_MARKS_VALUES_IDX = DASH_MARKS_VALUES_IDX + 1
+DIGITS_TO_WORDS_RATIO_IDX = PSIKIM_MARKS_VALUES_IDX + 1
 
 
 def steamimfy(table):
@@ -206,18 +209,29 @@ def calculate_amount_of_words(table):
 
 
 def enrich_tables_vector(table, vectorized_ingrid, vectorized_instr):
-    #TODO： COUNT AMOUNT OF COMMAS
     #TODO： COUNT PSIKIM
-    #TODO  COUNT DOTS
-    #TODO COUNT  /
+
     calculate_amount_of_words(table)
     enrich_count_char_for_index(vectorized_ingrid, table, NEW_LINE_TO_WORD_RATIO_IDX, '\n')
     enrich_count_char_for_index(vectorized_ingrid, table, EXCLAMATION_MARKS_VALUES_IDX, '!')
     enrich_count_char_for_index(vectorized_ingrid, table, QUESTION_MARKS_VALUES_IDX, '?')
+    enrich_count_char_for_index(vectorized_ingrid, table, DOT_MARKS_VALUES_IDX, '.')
+    enrich_count_char_for_index(vectorized_ingrid, table, COMMA_MARKS_VALUES_IDX, ':')
+    enrich_count_char_for_index(vectorized_ingrid, table, SLASH_MARKS_VALUES_IDX, '/')
+    enrich_count_char_for_index(vectorized_ingrid, table, DASH_MARKS_VALUES_IDX, '-')
+    enrich_count_char_for_index(vectorized_ingrid, table, PSIKIM_MARKS_VALUES_IDX, ',')
+
     enrich_ratio_word_to_numbers(vectorized_ingrid, table)
+
     enrich_count_char_for_index(vectorized_instr, table, NEW_LINE_TO_WORD_RATIO_IDX, '\n')
     enrich_count_char_for_index(vectorized_instr, table, EXCLAMATION_MARKS_VALUES_IDX, '!')
     enrich_count_char_for_index(vectorized_instr, table, QUESTION_MARKS_VALUES_IDX, '?')
+    enrich_count_char_for_index(vectorized_instr, table, DOT_MARKS_VALUES_IDX, '.')
+    enrich_count_char_for_index(vectorized_instr, table, COMMA_MARKS_VALUES_IDX, ':')
+    enrich_count_char_for_index(vectorized_instr, table, SLASH_MARKS_VALUES_IDX, '/')
+    enrich_count_char_for_index(vectorized_instr, table, DASH_MARKS_VALUES_IDX, '-')
+    enrich_count_char_for_index(vectorized_instr, table, PSIKIM_MARKS_VALUES_IDX, ',')
+
     enrich_ratio_word_to_numbers(vectorized_instr, table)
 
 
