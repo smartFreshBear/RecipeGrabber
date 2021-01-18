@@ -15,5 +15,14 @@ phase 3: travel the world in 7 seas - everybody is looking for something
 
 cloning & running(via pycharm)
 
+0-read about & install anaconda 
 1- download pycharm
-2-clone project from gitHub:
+2-clone project from gitHub("get from vcs or something similiar):
+https://github.com/smartFreshBear/RecipeGrabber.git
+3-read about pip and its relation to python.
+4-go over all the .py files and use pip [u can use the pycharm terminal] to install all the missing dependencies]
+5- try to run the flask app[also read about flask!]
+
+
+TODO - 
+[] create a requirements.txt for our python project
