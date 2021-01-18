@@ -11,3 +11,9 @@ phase 2:
 use real API(TensorFlow, SK,KERAS) to replace the written functionallity
 
 phase 3: travel the world in 7 seas - everybody is looking for something
+
+
+cloning & running(via pycharm)
+
+1- download pycharm
+2-clone project from gitHub:
