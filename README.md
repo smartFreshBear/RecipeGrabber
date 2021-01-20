@@ -15,7 +15,7 @@ phase 3: travel the world in 7 seas - everybody is looking for something
 
 cloning & running(via pycharm)
 
-0-learn git, here is a nice video: https://www.youtube.com/watch?v=USjZcfj8yxE
+0-learn git, here is a nice video: https://www.youtube.com/watch?v=USjZcfj8yxE.
 0.1read about & install anaconda.
 1- download pycharm.
 2-clone project from gitHub("get from vcs or something similiar):
