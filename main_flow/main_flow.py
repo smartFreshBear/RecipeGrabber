@@ -261,13 +261,13 @@ def train():
     rs1,rs2 = 0.70 , 0.70
     while rs1 < 0.99 or rs2 < 0.99:
         parameters_instructions = utils.L_layer_network.L_layer_model(vectorized_instr.T, instru_lbls.T, layers_dims,
-                                                                  learning_rate=0.09,
-                                                                  num_iterations=5000,
+                                                                  learning_rate=0.30,
+                                                                  num_iterations=2000,
                                                                   print_cost=True)
 
         parameters_ingri = utils.L_layer_network.L_layer_model(vectorized_ingrid.T, ingrid_lbls.T, layers_dims,
-                                                           learning_rate=0.12,
-                                                           num_iterations=7000,
+                                                           learning_rate=0.30,
+                                                           num_iterations=2000,
                                                            print_cost=True)
 
         rs1,rs2 = print_accuracy(ingrid_lbls, instru_lbls, parameters_ingri, parameters_instructions, vectorized_ingrid,
