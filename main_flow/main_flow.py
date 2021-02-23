@@ -14,6 +14,8 @@ import utils
 
 import numpy as np
 
+from training import training_test_cv_divider
+
 HEBREW_NLP_END_POINT = 'https://hebrew-nlp.co.il/service/Morphology/Normalize'
 
 requests_cache.install_cache(cache_name='hebrew_roots', backend='sqlite', expire_after=60 * 60 * 24 * 100)
@@ -235,22 +237,24 @@ def enrich_tables_vector(table, vectorized_ingrid, vectorized_instr):
     enrich_ratio_word_to_numbers(vectorized_instr, table)
 
 
-def divided_training_test(examples_matrix, lbls, train_prec):
-    size_of_matrix = len(examples_matrix)
-    size_of_training = int(size_of_matrix * train_prec)
-
-    training = examples_matrix[0:size_of_training, :]
-    training_lbls = lbls[0:size_of_training]
-
-    test = examples_matrix[size_of_training + 1: size_of_matrix, :]
-    test_lbls = lbls[size_of_training + 1: size_of_matrix]
-    return training, training_lbls, test, test_lbls
+# def divided_training_test(examples_matrix, lbls, train_prec):
+#
+#
+#     size_of_matrix = len(examples_matrix)
+#     size_of_training = int(size_of_matrix * train_prec)
+#
+#     training = examples_matrix[0:size_of_training, :]
+#     training_lbls = lbls[0:size_of_training]
+#
+#     test = examples_matrix[size_of_training + 1: size_of_matrix, :]
+#     test_lbls = lbls[size_of_training + 1: size_of_matrix]
+#     return training, training_lbls, test, test_lbls
 
 
 def train():
     vectorized_instr, instru_lbls, vectorized_ingrid, ingrid_lbls = load_data()
 
-    # train_x_orig, train_y, test_x_orig, test_y = divided_training_test(vectorized_instr, instru_lbls, 0.8)
+    train_x_orig, train_y, test_x_orig, test_y = training_test_cv_divider.divided_training_test(vectorized_instr, instru_lbls, 0.8)
 
     layers_dims = [TOP_WORD_NUM + EXTRA_FEATURES_NUM, 24, 12, 1]  # layer model
 
