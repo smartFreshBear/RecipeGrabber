@@ -31,6 +31,9 @@ def check_if_text_is_recipe():
 @app.route('/find_recipe_in_url/', methods=['POST'])
 def find_recipe_in_url():
     url = request.form['url']
+    instructions = request.form['instructions'].lower() == "true"
+    ingridients = request.form['ingridients'].lower() == "true"
+
 
     array_of_paragraphs_from_website = textExtractor.get_text_from_url(url=url)
 
@@ -38,8 +41,8 @@ def find_recipe_in_url():
 
     for paragraph in array_of_paragraphs_from_website:
 
-        is_ingri = main_flow.main_flow.predict_ingri(paragraph)
-        is_instruc = main_flow.main_flow.predict_instru(paragraph)
+        is_ingri = ingridients and main_flow.main_flow.predict_ingri(paragraph)
+        is_instruc = instructions and main_flow.main_flow.predict_instru(paragraph)
         is_recipe = float(1)
         if is_ingri == is_recipe or is_instruc == is_recipe:
             answer += paragraph
