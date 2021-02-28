@@ -43,7 +43,7 @@ def periodically_save_cache(sc):
     scheduler.enter(60, 1, periodically_save_cache, (sc,))
 
 
-TOP_WORD_NUM = 170
+TOP_WORD_NUM = 150
 EXTRA_FEATURES_NUM = 14
 
 NEW_LINE_TO_WORD_RATIO_IDX = TOP_WORD_NUM + 1
@@ -211,7 +211,7 @@ def calculate_amount_of_words(table):
 
 
 def enrich_tables_vector(table, vectorized_ingrid, vectorized_instr):
-    #TODO： COUNT PSIKIM
+    # TODO： COUNT PSIKIM
 
     calculate_amount_of_words(table)
     enrich_count_char_for_index(vectorized_ingrid, table, NEW_LINE_TO_WORD_RATIO_IDX, '\n')
@@ -237,52 +237,68 @@ def enrich_tables_vector(table, vectorized_ingrid, vectorized_instr):
     enrich_ratio_word_to_numbers(vectorized_instr, table)
 
 
-# def divided_training_test(examples_matrix, lbls, train_prec):
-#
-#
-#     size_of_matrix = len(examples_matrix)
-#     size_of_training = int(size_of_matrix * train_prec)
-#
-#     training = examples_matrix[0:size_of_training, :]
-#     training_lbls = lbls[0:size_of_training]
-#
-#     test = examples_matrix[size_of_training + 1: size_of_matrix, :]
-#     test_lbls = lbls[size_of_training + 1: size_of_matrix]
-#     return training, training_lbls, test, test_lbls
+def train(neurons_in_first_hidden_layer, neurons_in_second_hidden_layer, top_word_num):
+
+    vectorized_instr, instr_labels, vectorized_ingred, ingred_labels = load_data()
+
+    training_ex_instr, training_labels_instr, validation_ex_instr, validation_labels_instr, test_ex_instr, test_labels_instr = \
+        training_test_cv_divider.divided_training_test(vectorized_instr, instr_labels, 0.6)
+
+    training_ex_ingred, training_labels_ingred, validation_ex_ingred, validation_labels_ingred, test_ex_ingred, test_labels_ingred = \
+        training_test_cv_divider.divided_training_test(vectorized_ingred, ingred_labels, 0.6)
+
+    if neurons_in_second_hidden_layer == 0:
+        layers_dims = [top_word_num + EXTRA_FEATURES_NUM, neurons_in_first_hidden_layer,
+                       1]  # layer model with one hidden layer
+    else:
+        layers_dims = [top_word_num + EXTRA_FEATURES_NUM, neurons_in_first_hidden_layer, neurons_in_second_hidden_layer,
+                       1]  # layer model with two hidden layer
+
+    global parameters_instr
+    global parameters_ingred
+
+    parameters_instr = utils.L_layer_network.L_layer_model(training_ex_instr.T,
+                                                           training_labels_instr.T,
+                                                           layers_dims,
+                                                           learning_rate=0.3,
+                                                           num_iterations=700,
+                                                           print_cost=True,
+                                                           plot=False)
 
 
-def train():
-    vectorized_instr, instru_lbls, vectorized_ingrid, ingrid_lbls = load_data()
+    parameters_ingred = utils.L_layer_network.L_layer_model(training_ex_ingred.T,
+                                                            training_labels_ingred.T,
+                                                            layers_dims,
+                                                            learning_rate=0.3,
+                                                            num_iterations=1000,
+                                                            print_cost=True,
+                                                            plot=False)
 
-    train_x_orig, train_y, test_x_orig, test_y = training_test_cv_divider.divided_training_test(vectorized_instr, instru_lbls, 0.8)
+    train_instr_error = error_percent(training_ex_instr, training_labels_instr, parameters_instr)
+    validation_instr_error = error_percent(validation_ex_instr, validation_labels_instr, parameters_instr)
+    test_instr_error = error_percent(test_ex_instr, test_labels_instr, parameters_instr)
+    train_ingred_error = error_percent(training_ex_ingred, training_labels_ingred, parameters_ingred)
+    validation_ingred_error = error_percent(validation_ex_ingred, validation_labels_ingred, parameters_ingred)
+    test_ingred_error = error_percent(test_ex_ingred, test_labels_ingred, parameters_ingred)
+    print("training instruction error : " + str(train_instr_error))
+    print("validation instruction error : " + str(validation_instr_error))
+    print("test instruction error : " + str(test_instr_error))
+    print("training ingredient error : " + str(train_ingred_error))
+    print("validation ingredient error : " + str(validation_ingred_error))
+    print("test ingredient error : " + str(test_ingred_error))
 
-    layers_dims = [TOP_WORD_NUM + EXTRA_FEATURES_NUM, 24, 12, 1]  # layer model
 
-    global parameters_instructions
-    global parameters_ingri
-
-
-    rs1,rs2 = 0.70 , 0.70
-    while rs1 < 0.99 or rs2 < 0.99:
-        parameters_instructions = utils.L_layer_network.L_layer_model(vectorized_instr.T, instru_lbls.T, layers_dims,
-                                                                  learning_rate=0.30,
-                                                                  num_iterations=2000,
-                                                                  print_cost=True)
-
-        parameters_ingri = utils.L_layer_network.L_layer_model(vectorized_ingrid.T, ingrid_lbls.T, layers_dims,
-                                                           learning_rate=0.30,
-                                                           num_iterations=2000,
-                                                           print_cost=True)
-
-        rs1,rs2 = print_accuracy(ingrid_lbls, instru_lbls, parameters_ingri, parameters_instructions, vectorized_ingrid,
-                   vectorized_instr)
+def error_percent(vectorized_example, labels, parameters):
+    results_training_set = utils.core_methods.predict(vectorized_example.T,
+                                                      parameters=parameters)
+    return 1 - np.sum((results_training_set == labels.T)) / vectorized_example.T.shape[1]
 
 
 def predict_ingri(text):
     a, b, c, d = example_to_vector(text)
 
     predictions = utils.core_methods.predict(c.T,
-                                             parameters=parameters_ingri)
+                                             parameters=parameters_ingred)
 
     predicted = predictions[0][1]
 
@@ -293,25 +309,10 @@ def predict_instru(text):
     a, b, c, d = example_to_vector(text)
 
     predictions = utils.core_methods.predict(c.T,
-                                             parameters=parameters_instructions)
+                                             parameters=parameters_instr)
     predicted = predictions[0][1]
 
     return predicted
-
-
-def print_accuracy(ingrid_lbls, instru_lbls, parameters_ingri, parameters_instructions, vectorized_ingrid,
-                   vectorized_instr ):
-    results_training_set_instru = utils.core_methods.predict(vectorized_instr.T,
-                                                             parameters=parameters_instructions)
-    results_training_set_ingri = utils.core_methods.predict(vectorized_ingrid.T,
-                                                            parameters=parameters_ingri)
-
-    accuracy_instu = np.sum((results_training_set_instru == instru_lbls.T)) / vectorized_instr.T.shape[1]
-    print("Accuracy instru: " + str(accuracy_instu))
-    accuracy_ingri = np.sum((results_training_set_ingri == ingrid_lbls.T)) / vectorized_ingrid.T.shape[1]
-    print("Accuracy ingri: " + str(accuracy_ingri))
-
-    return accuracy_instu, accuracy_ingri
 
 
 def run_threaded(job_func):
@@ -320,8 +321,9 @@ def run_threaded(job_func):
 
 
 def main():
+
     load_cache_from_disk()
-    train()
+    train(2, 0, TOP_WORD_NUM)
     run_threaded(start_periodic)
 
 
