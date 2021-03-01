@@ -237,55 +237,40 @@ def enrich_tables_vector(table, vectorized_ingrid, vectorized_instr):
     enrich_ratio_word_to_numbers(vectorized_instr, table)
 
 
-def train(neurons_in_first_hidden_layer, neurons_in_second_hidden_layer, top_word_num):
-
+def train(num_of_neurons_in_hidden_layer, learning_rate, num_iterations, instruction):
     vectorized_instr, instr_labels, vectorized_ingred, ingred_labels = load_data()
 
-    training_ex_instr, training_labels_instr, validation_ex_instr, validation_labels_instr, test_ex_instr, test_labels_instr = \
-        training_test_cv_divider.divided_training_test(vectorized_instr, instr_labels, 0.6)
-
-    training_ex_ingred, training_labels_ingred, validation_ex_ingred, validation_labels_ingred, test_ex_ingred, test_labels_ingred = \
-        training_test_cv_divider.divided_training_test(vectorized_ingred, ingred_labels, 0.6)
-
-    if neurons_in_second_hidden_layer == 0:
-        layers_dims = [top_word_num + EXTRA_FEATURES_NUM, neurons_in_first_hidden_layer,
-                       1]  # layer model with one hidden layer
+    if instruction:
+        training_ex, training_labels, validation_ex, validation_labels, test_ex, test_labels = \
+            training_test_cv_divider.divided_training_test(vectorized_instr, instr_labels, 0.6)
     else:
-        layers_dims = [top_word_num + EXTRA_FEATURES_NUM, neurons_in_first_hidden_layer, neurons_in_second_hidden_layer,
-                       1]  # layer model with two hidden layer
+        training_ex, training_labels, validation_ex, validation_labels, test_ex, test_labels = \
+            training_test_cv_divider.divided_training_test(vectorized_ingred, ingred_labels, 0.6)
 
-    global parameters_instr
-    global parameters_ingred
+    layers_dims = [TOP_WORD_NUM + EXTRA_FEATURES_NUM, num_of_neurons_in_hidden_layer, 1]
 
-    parameters_instr = utils.L_layer_network.L_layer_model(training_ex_instr.T,
-                                                           training_labels_instr.T,
-                                                           layers_dims,
-                                                           learning_rate=0.3,
-                                                           num_iterations=700,
-                                                           print_cost=True,
-                                                           plot=False)
+    parameters = utils.L_layer_network.L_layer_model(training_ex.T,
+                                                     training_labels.T,
+                                                     layers_dims,
+                                                     learning_rate,
+                                                     num_iterations,
+                                                     print_cost=False,
+                                                     plot=False)
 
+    train_error = error_percent(training_ex, training_labels, parameters)
+    validation_error = error_percent(validation_ex, validation_labels, parameters)
+    test_error = error_percent(test_ex, test_labels, parameters)
 
-    parameters_ingred = utils.L_layer_network.L_layer_model(training_ex_ingred.T,
-                                                            training_labels_ingred.T,
-                                                            layers_dims,
-                                                            learning_rate=0.3,
-                                                            num_iterations=1000,
-                                                            print_cost=True,
-                                                            plot=False)
+    if instruction:
+        print("training instruction error : " + str(train_error))
+        print("validation instruction error : " + str(validation_error))
+        print("test instruction error : " + str(test_error))
+    else:
+        print("training ingredient error : " + str(train_error))
+        print("validation ingredient error : " + str(validation_error))
+        print("test ingredient error : " + str(test_error))
 
-    train_instr_error = error_percent(training_ex_instr, training_labels_instr, parameters_instr)
-    validation_instr_error = error_percent(validation_ex_instr, validation_labels_instr, parameters_instr)
-    test_instr_error = error_percent(test_ex_instr, test_labels_instr, parameters_instr)
-    train_ingred_error = error_percent(training_ex_ingred, training_labels_ingred, parameters_ingred)
-    validation_ingred_error = error_percent(validation_ex_ingred, validation_labels_ingred, parameters_ingred)
-    test_ingred_error = error_percent(test_ex_ingred, test_labels_ingred, parameters_ingred)
-    print("training instruction error : " + str(train_instr_error))
-    print("validation instruction error : " + str(validation_instr_error))
-    print("test instruction error : " + str(test_instr_error))
-    print("training ingredient error : " + str(train_ingred_error))
-    print("validation ingredient error : " + str(validation_ingred_error))
-    print("test ingredient error : " + str(test_ingred_error))
+    return parameters, validation_error, train_error
 
 
 def error_percent(vectorized_example, labels, parameters):
@@ -321,9 +306,13 @@ def run_threaded(job_func):
 
 
 def main():
-
     load_cache_from_disk()
-    train(2, 0, TOP_WORD_NUM)
+
+    global parameters_instr
+    global parameters_ingred
+    parameters_instr = train(4, learning_rate=0.5, num_iterations=170, instruction=True)
+    parameters_ingred = train(4, learning_rate=0.5, num_iterations=175, instruction=False)
+
     run_threaded(start_periodic)
 
 
