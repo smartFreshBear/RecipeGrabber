@@ -15,6 +15,7 @@ import utils
 import numpy as np
 
 from training import training_test_cv_divider
+from utils import presistor
 
 HEBREW_NLP_END_POINT = 'https://hebrew-nlp.co.il/service/Morphology/Normalize'
 
@@ -23,7 +24,7 @@ requests_cache.install_cache(cache_name='hebrew_roots', backend='sqlite', expire
 scheduler = sched.scheduler(time.time, time.sleep)
 
 
-def load_cache_from_disk():
+def load_steam_cache_from_disk():
     try:
         with open('data.pkl', 'rb') as handle:
             global from_word_to_steam_cache
@@ -254,13 +255,12 @@ def enrich_tables_vector(table, vectorized_ingrid, vectorized_instr):
 def train():
     vectorized_instr, instru_lbls, vectorized_ingrid, ingrid_lbls = load_data()
 
-    train_x_orig, train_y, test_x_orig, test_y = training_test_cv_divider.divided_training_test(vectorized_instr, instru_lbls, 0.8)
+    # train_x_orig, train_y, test_x_orig, test_y = training_test_cv_divider.divided_training_test(vectorized_instr, instru_lbls, 0.8)
 
     layers_dims = [TOP_WORD_NUM + EXTRA_FEATURES_NUM, 24, 12, 1]  # layer model
 
     global parameters_instructions
     global parameters_ingri
-
 
     rs1,rs2 = 0.70 , 0.70
     while rs1 < 0.99 or rs2 < 0.99:
@@ -274,8 +274,13 @@ def train():
                                                            num_iterations=2000,
                                                            print_cost=True)
 
-        rs1,rs2 = print_accuracy(ingrid_lbls, instru_lbls, parameters_ingri, parameters_instructions, vectorized_ingrid,
+        rs1, rs2 = print_accuracy(ingrid_lbls, instru_lbls, parameters_ingri, parameters_instructions, vectorized_ingrid,
                    vectorized_instr)
+
+    presistor.presist_parameters_to_disk(parameters_instructions, 'parameters_instructions')
+    presistor.presist_parameters_to_disk(parameters_ingri, 'parameters_ingri')
+
+
 
 
 def predict_ingri(text):
@@ -319,9 +324,19 @@ def run_threaded(job_func):
     job_thread.start()
 
 
+parameters_instructions = {}
+parameters_ingri = {}
+
+
 def main():
-    load_cache_from_disk()
-    train()
+
+    load_steam_cache_from_disk()
+    global parameters_instructions
+    global parameters_ingri
+    parameters_instructions = presistor.load_parameter_cache_from_disk('parameters_instructions')
+    parameters_ingri = presistor.load_parameter_cache_from_disk('parameters_ingri')
+    if parameters_ingri == {} or parameters_instructions == {}:
+        train()
     run_threaded(start_periodic)
 
 

@@ -18,6 +18,10 @@ print("server is up and running :)")
 def is_server_up():
     return "Yes, Server is up"
 
+@app.route('/train')
+def is_server_up():
+    return main_flow.main_flow.train()
+
 
 @app.route('/is_text_recipe/', methods=['POST'])
 def check_if_text_is_recipe():
