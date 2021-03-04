@@ -19,8 +19,8 @@ def is_server_up():
     return "Yes, Server is up"
 
 @app.route('/train')
-def is_server_up():
-    return main_flow.main_flow.train()
+def train():
+    return main_flow.main_flow.main()
 
 
 @app.route('/is_text_recipe/', methods=['POST'])

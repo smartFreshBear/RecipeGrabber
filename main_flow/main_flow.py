@@ -17,6 +17,10 @@ import numpy as np
 from training import training_test_cv_divider
 from utils import presistor
 
+INGRED_NAME = 'parameters_ingred'
+
+INSTRUCTION_NAME = 'parameters_instr'
+
 HEBREW_NLP_END_POINT = 'https://hebrew-nlp.co.il/service/Morphology/Normalize'
 
 requests_cache.install_cache(cache_name='hebrew_roots', backend='sqlite', expire_after=60 * 60 * 24 * 100)
@@ -57,6 +61,7 @@ DASH_MARKS_VALUES_IDX = SLASH_MARKS_VALUES_IDX + 1
 PSIKIM_MARKS_VALUES_IDX = DASH_MARKS_VALUES_IDX + 1
 DIGITS_TO_WORDS_RATIO_IDX = PSIKIM_MARKS_VALUES_IDX + 1
 
+FROM_NAME_TO_LABELS = {}
 
 def steamimfy(table):
     steamedTable = copy.deepcopy(table)
@@ -193,6 +198,9 @@ def load_data():
 
     enrich_tables_vector(table, vectorized_ingrid, vectorized_instr)
 
+    FROM_NAME_TO_LABELS[INSTRUCTION_NAME] = [vectorized_instr, instruction_lbls]
+    FROM_NAME_TO_LABELS[INGRED_NAME] = [vectorized_ingrid, ingrid_lbls]
+
     return vectorized_instr, instruction_lbls, vectorized_ingrid, ingrid_lbls
 
 
@@ -238,15 +246,12 @@ def enrich_tables_vector(table, vectorized_ingrid, vectorized_instr):
     enrich_ratio_word_to_numbers(vectorized_instr, table)
 
 
-def train(num_of_neurons_in_hidden_layer, learning_rate, num_iterations, instruction):
-    vectorized_instr, instr_labels, vectorized_ingred, ingred_labels = load_data()
+def train(num_of_neurons_in_hidden_layer, learning_rate, num_iterations, name_group):
+    load_data()
 
-    if instruction:
-        training_ex, training_labels, validation_ex, validation_labels, test_ex, test_labels = \
-            training_test_cv_divider.divided_training_test(vectorized_instr, instr_labels, 0.6)
-    else:
-        training_ex, training_labels, validation_ex, validation_labels, test_ex, test_labels = \
-            training_test_cv_divider.divided_training_test(vectorized_ingred, ingred_labels, 0.6)
+    training_ex, training_labels, validation_ex, validation_labels, test_ex, test_labels = \
+        training_test_cv_divider.divided_training_test(FROM_NAME_TO_LABELS[name_group][0],
+                                                       FROM_NAME_TO_LABELS[name_group][1], 0.8)
 
     layers_dims = [TOP_WORD_NUM + EXTRA_FEATURES_NUM, num_of_neurons_in_hidden_layer, 1]
 
@@ -258,18 +263,15 @@ def train(num_of_neurons_in_hidden_layer, learning_rate, num_iterations, instruc
                                                      print_cost=False,
                                                      plot=False)
 
+    presistor.presist_parameters_to_disk(parameters, name_group)
+
     train_error = error_percent(training_ex, training_labels, parameters)
     validation_error = error_percent(validation_ex, validation_labels, parameters)
     test_error = error_percent(test_ex, test_labels, parameters)
 
-    if instruction:
-        print("training instruction error : " + str(train_error))
-        print("validation instruction error : " + str(validation_error))
-        print("test instruction error : " + str(test_error))
-    else:
-        print("training ingredient error : " + str(train_error))
-        print("validation ingredient error : " + str(validation_error))
-        print("test ingredient error : " + str(test_error))
+    print("training {0} error: {1} ".format(name_group, str(train_error)))
+    print("validation {0} instruction error : {1} ".format(name_group, str(validation_error)))
+    print("test {0} instruction error : {1} ".format(name_group, str(test_error)))
 
     return parameters, validation_error, train_error
 
@@ -278,11 +280,6 @@ def error_percent(vectorized_example, labels, parameters):
     results_training_set = utils.core_methods.predict(vectorized_example.T,
                                                       parameters=parameters)
     return 1 - np.sum((results_training_set == labels.T)) / vectorized_example.T.shape[1]
-
-    presistor.presist_parameters_to_disk(parameters_instructions, 'parameters_instructions')
-    presistor.presist_parameters_to_disk(parameters_ingri, 'parameters_ingri')
-
-
 
 
 def predict_ingri(text):
@@ -316,21 +313,19 @@ parameters_ingri = {}
 
 
 def main():
-    load_cache_from_disk()
+    load_steam_cache_from_disk()
 
     global parameters_instr
     global parameters_ingred
-    parameters_instr = train(4, learning_rate=0.5, num_iterations=170, instruction=True)
-    parameters_ingred = train(4, learning_rate=0.5, num_iterations=175, instruction=False)
+    global FROM_NAME_TO_LABELS
 
+    parameters_instr = presistor.load_parameter_cache_from_disk(INSTRUCTION_NAME)
+    parameters_ingred = presistor.load_parameter_cache_from_disk(INGRED_NAME)
 
-    load_steam_cache_from_disk()
-    global parameters_instructions
-    global parameters_ingri
-    parameters_instructions = presistor.load_parameter_cache_from_disk('parameters_instructions')
-    parameters_ingri = presistor.load_parameter_cache_from_disk('parameters_ingri')
     if parameters_ingri == {} or parameters_instructions == {}:
-        train()
+        parameters_instr = train(4, learning_rate=0.5, num_iterations=170, name_group=INSTRUCTION_NAME)
+        parameters_ingred = train(4, learning_rate=0.5, num_iterations=175, name_group=INGRED_NAME)
+
     run_threaded(start_periodic)
 
 
