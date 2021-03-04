@@ -5,9 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="578bd6b3-8690-41ef-941c-7c15dd83aa36" name="Default Changelist" comment="improving: train, changing accuracy_print to error_percent, adding the function training_test_cv_divider.py">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/token.pickle" beforeDir="false" afterPath="$PROJECT_DIR$/app/token.pickle" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main_flow/main_flow.py" beforeDir="false" afterPath="$PROJECT_DIR$/main_flow/main_flow.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/L_layer_network.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/L_layer_network.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -148,6 +147,16 @@
           <url>file://$PROJECT_DIR$/app/app.py</url>
           <line>23</line>
           <option name="timeStamp" value="1" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/training/training_test_cv_divider.py</url>
+          <line>21</line>
+          <option name="timeStamp" value="36" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/training/training_test_cv_divider.py</url>
+          <line>22</line>
+          <option name="timeStamp" value="37" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
