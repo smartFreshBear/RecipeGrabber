@@ -15,6 +15,7 @@ import utils
 import numpy as np
 
 from training import training_test_cv_divider
+from utils import presistor
 
 HEBREW_NLP_END_POINT = 'https://hebrew-nlp.co.il/service/Morphology/Normalize'
 
@@ -23,7 +24,7 @@ requests_cache.install_cache(cache_name='hebrew_roots', backend='sqlite', expire
 scheduler = sched.scheduler(time.time, time.sleep)
 
 
-def load_cache_from_disk():
+def load_steam_cache_from_disk():
     try:
         with open('data.pkl', 'rb') as handle:
             global from_word_to_steam_cache
@@ -278,6 +279,11 @@ def error_percent(vectorized_example, labels, parameters):
                                                       parameters=parameters)
     return 1 - np.sum((results_training_set == labels.T)) / vectorized_example.T.shape[1]
 
+    presistor.presist_parameters_to_disk(parameters_instructions, 'parameters_instructions')
+    presistor.presist_parameters_to_disk(parameters_ingri, 'parameters_ingri')
+
+
+
 
 def predict_ingri(text):
     a, b, c, d = example_to_vector(text)
@@ -305,6 +311,10 @@ def run_threaded(job_func):
     job_thread.start()
 
 
+parameters_instructions = {}
+parameters_ingri = {}
+
+
 def main():
     load_cache_from_disk()
 
@@ -313,6 +323,14 @@ def main():
     parameters_instr = train(4, learning_rate=0.5, num_iterations=170, instruction=True)
     parameters_ingred = train(4, learning_rate=0.5, num_iterations=175, instruction=False)
 
+
+    load_steam_cache_from_disk()
+    global parameters_instructions
+    global parameters_ingri
+    parameters_instructions = presistor.load_parameter_cache_from_disk('parameters_instructions')
+    parameters_ingri = presistor.load_parameter_cache_from_disk('parameters_ingri')
+    if parameters_ingri == {} or parameters_instructions == {}:
+        train()
     run_threaded(start_periodic)
 
 
