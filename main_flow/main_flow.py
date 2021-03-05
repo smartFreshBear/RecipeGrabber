@@ -17,6 +17,10 @@ import numpy as np
 from training import training_test_cv_divider
 from utils import presistor
 
+INGRED_NAME = 'parameters_ingred'
+
+INSTRUCTION_NAME = 'parameters_instr'
+
 HEBREW_NLP_END_POINT = 'https://hebrew-nlp.co.il/service/Morphology/Normalize'
 
 requests_cache.install_cache(cache_name='hebrew_roots', backend='sqlite', expire_after=60 * 60 * 24 * 100)
@@ -44,7 +48,7 @@ def periodically_save_cache(sc):
     scheduler.enter(60, 1, periodically_save_cache, (sc,))
 
 
-TOP_WORD_NUM = 170
+TOP_WORD_NUM = 150
 EXTRA_FEATURES_NUM = 14
 
 NEW_LINE_TO_WORD_RATIO_IDX = TOP_WORD_NUM + 1
@@ -57,6 +61,7 @@ DASH_MARKS_VALUES_IDX = SLASH_MARKS_VALUES_IDX + 1
 PSIKIM_MARKS_VALUES_IDX = DASH_MARKS_VALUES_IDX + 1
 DIGITS_TO_WORDS_RATIO_IDX = PSIKIM_MARKS_VALUES_IDX + 1
 
+FROM_NAME_TO_LABELS = {}
 
 def steamimfy(table):
     steamedTable = copy.deepcopy(table)
@@ -193,6 +198,9 @@ def load_data():
 
     enrich_tables_vector(table, vectorized_ingrid, vectorized_instr)
 
+    FROM_NAME_TO_LABELS[INSTRUCTION_NAME] = [vectorized_instr, instruction_lbls]
+    FROM_NAME_TO_LABELS[INGRED_NAME] = [vectorized_ingrid, ingrid_lbls]
+
     return vectorized_instr, instruction_lbls, vectorized_ingrid, ingrid_lbls
 
 
@@ -212,7 +220,7 @@ def calculate_amount_of_words(table):
 
 
 def enrich_tables_vector(table, vectorized_ingrid, vectorized_instr):
-    #TODO： COUNT PSIKIM
+    # TODO： COUNT PSIKIM
 
     calculate_amount_of_words(table)
     enrich_count_char_for_index(vectorized_ingrid, table, NEW_LINE_TO_WORD_RATIO_IDX, '\n')
@@ -238,56 +246,47 @@ def enrich_tables_vector(table, vectorized_ingrid, vectorized_instr):
     enrich_ratio_word_to_numbers(vectorized_instr, table)
 
 
-# def divided_training_test(examples_matrix, lbls, train_prec):
-#
-#
-#     size_of_matrix = len(examples_matrix)
-#     size_of_training = int(size_of_matrix * train_prec)
-#
-#     training = examples_matrix[0:size_of_training, :]
-#     training_lbls = lbls[0:size_of_training]
-#
-#     test = examples_matrix[size_of_training + 1: size_of_matrix, :]
-#     test_lbls = lbls[size_of_training + 1: size_of_matrix]
-#     return training, training_lbls, test, test_lbls
+def train(num_of_neurons_in_hidden_layer, learning_rate, num_iterations, name_group):
+    load_data()
+
+    training_ex, training_labels, validation_ex, validation_labels, test_ex, test_labels = \
+        training_test_cv_divider.divided_training_test(FROM_NAME_TO_LABELS[name_group][0],
+                                                       FROM_NAME_TO_LABELS[name_group][1], 0.8)
+
+    layers_dims = [TOP_WORD_NUM + EXTRA_FEATURES_NUM, num_of_neurons_in_hidden_layer, 1]
+
+    parameters = utils.L_layer_network.L_layer_model(training_ex.T,
+                                                     training_labels.T,
+                                                     layers_dims,
+                                                     learning_rate,
+                                                     num_iterations,
+                                                     print_cost=False,
+                                                     plot=False)
+
+    presistor.presist_parameters_to_disk(parameters, name_group)
+
+    train_error = error_percent(training_ex, training_labels, parameters)
+    validation_error = error_percent(validation_ex, validation_labels, parameters)
+    test_error = error_percent(test_ex, test_labels, parameters)
+
+    print("training {0} error: {1} ".format(name_group, str(train_error)))
+    print("validation {0} instruction error : {1} ".format(name_group, str(validation_error)))
+    print("test {0} instruction error : {1} ".format(name_group, str(test_error)))
+
+    return parameters, validation_error, train_error
 
 
-def train():
-    vectorized_instr, instru_lbls, vectorized_ingrid, ingrid_lbls = load_data()
-
-    # train_x_orig, train_y, test_x_orig, test_y = training_test_cv_divider.divided_training_test(vectorized_instr, instru_lbls, 0.8)
-
-    layers_dims = [TOP_WORD_NUM + EXTRA_FEATURES_NUM, 24, 12, 1]  # layer model
-
-    global parameters_instructions
-    global parameters_ingri
-
-    rs1,rs2 = 0.70 , 0.70
-    while rs1 < 0.99 or rs2 < 0.99:
-        parameters_instructions = utils.L_layer_network.L_layer_model(vectorized_instr.T, instru_lbls.T, layers_dims,
-                                                                  learning_rate=0.30,
-                                                                  num_iterations=2000,
-                                                                  print_cost=True)
-
-        parameters_ingri = utils.L_layer_network.L_layer_model(vectorized_ingrid.T, ingrid_lbls.T, layers_dims,
-                                                           learning_rate=0.30,
-                                                           num_iterations=2000,
-                                                           print_cost=True)
-
-        rs1, rs2 = print_accuracy(ingrid_lbls, instru_lbls, parameters_ingri, parameters_instructions, vectorized_ingrid,
-                   vectorized_instr)
-
-    presistor.presist_parameters_to_disk(parameters_instructions, 'parameters_instructions')
-    presistor.presist_parameters_to_disk(parameters_ingri, 'parameters_ingri')
-
-
+def error_percent(vectorized_example, labels, parameters):
+    results_training_set = utils.core_methods.predict(vectorized_example.T,
+                                                      parameters=parameters)
+    return 1 - np.sum((results_training_set == labels.T)) / vectorized_example.T.shape[1]
 
 
 def predict_ingri(text):
     a, b, c, d = example_to_vector(text)
 
     predictions = utils.core_methods.predict(c.T,
-                                             parameters=parameters_ingri)
+                                             parameters=parameters_ingred)
 
     predicted = predictions[0][1]
 
@@ -298,25 +297,10 @@ def predict_instru(text):
     a, b, c, d = example_to_vector(text)
 
     predictions = utils.core_methods.predict(c.T,
-                                             parameters=parameters_instructions)
+                                             parameters=parameters_instr)
     predicted = predictions[0][1]
 
     return predicted
-
-
-def print_accuracy(ingrid_lbls, instru_lbls, parameters_ingri, parameters_instructions, vectorized_ingrid,
-                   vectorized_instr ):
-    results_training_set_instru = utils.core_methods.predict(vectorized_instr.T,
-                                                             parameters=parameters_instructions)
-    results_training_set_ingri = utils.core_methods.predict(vectorized_ingrid.T,
-                                                            parameters=parameters_ingri)
-
-    accuracy_instu = np.sum((results_training_set_instru == instru_lbls.T)) / vectorized_instr.T.shape[1]
-    print("Accuracy instru: " + str(accuracy_instu))
-    accuracy_ingri = np.sum((results_training_set_ingri == ingrid_lbls.T)) / vectorized_ingrid.T.shape[1]
-    print("Accuracy ingri: " + str(accuracy_ingri))
-
-    return accuracy_instu, accuracy_ingri
 
 
 def run_threaded(job_func):
@@ -329,14 +313,19 @@ parameters_ingri = {}
 
 
 def main():
-
     load_steam_cache_from_disk()
-    global parameters_instructions
-    global parameters_ingri
-    parameters_instructions = presistor.load_parameter_cache_from_disk('parameters_instructions')
-    parameters_ingri = presistor.load_parameter_cache_from_disk('parameters_ingri')
+
+    global parameters_instr
+    global parameters_ingred
+    global FROM_NAME_TO_LABELS
+
+    parameters_instr = presistor.load_parameter_cache_from_disk(INSTRUCTION_NAME)
+    parameters_ingred = presistor.load_parameter_cache_from_disk(INGRED_NAME)
+
     if parameters_ingri == {} or parameters_instructions == {}:
-        train()
+        parameters_instr = train(4, learning_rate=0.5, num_iterations=170, name_group=INSTRUCTION_NAME)
+        parameters_ingred = train(4, learning_rate=0.5, num_iterations=175, name_group=INGRED_NAME)
+
     run_threaded(start_periodic)
 
 
