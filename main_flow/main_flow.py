@@ -273,7 +273,7 @@ def train(num_of_neurons_in_hidden_layer, learning_rate, num_iterations, name_gr
     print("validation {0} instruction error : {1} ".format(name_group, str(validation_error)))
     print("test {0} instruction error : {1} ".format(name_group, str(test_error)))
 
-    return parameters, validation_error, train_error
+    return parameters
 
 
 def error_percent(vectorized_example, labels, parameters):
@@ -283,9 +283,9 @@ def error_percent(vectorized_example, labels, parameters):
 
 
 def predict_ingri(text):
-    a, b, c, d = example_to_vector(text)
+    vectorized_instr, instruction_lbls, vectorized_ingrid, ingrid_lbls = example_to_vector(text)
 
-    predictions = utils.core_methods.predict(c.T,
+    predictions = utils.core_methods.predict(vectorized_ingrid.T,
                                              parameters=parameters_ingred)
 
     predicted = predictions[0][1]
@@ -294,9 +294,9 @@ def predict_ingri(text):
 
 
 def predict_instru(text):
-    a, b, c, d = example_to_vector(text)
+    vectorized_instr, instruction_lbls, vectorized_ingrid, ingrid_lbls = example_to_vector(text)
 
-    predictions = utils.core_methods.predict(c.T,
+    predictions = utils.core_methods.predict(vectorized_instr.T,
                                              parameters=parameters_instr)
     predicted = predictions[0][1]
 
