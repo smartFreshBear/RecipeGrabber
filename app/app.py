@@ -18,6 +18,7 @@ print("server is up and running :)")
 def is_server_up():
     return "Yes, Server is up"
 
+
 @app.route('/train')
 def train():
     return main_flow.main_flow.main()
@@ -36,7 +37,7 @@ def check_if_text_is_recipe():
 def find_recipe_in_url():
     url = request.form['url']
     instructions = request.form['instructions'].lower() == "true"
-    ingridients = request.form['ingridients'].lower() == "true"
+    ingredients = request.form['ingredients'].lower() == "true"
 
 
     array_of_paragraphs_from_website = textExtractor.get_text_from_url(url=url)
@@ -45,7 +46,7 @@ def find_recipe_in_url():
 
     for paragraph in array_of_paragraphs_from_website:
 
-        is_ingri = ingridients and main_flow.main_flow.predict_ingri(paragraph)
+        is_ingri = ingredients and main_flow.main_flow.predict_ingri(paragraph)
         is_instruc = instructions and main_flow.main_flow.predict_instru(paragraph)
         is_recipe = float(1)
         if is_ingri == is_recipe or is_instruc == is_recipe:
