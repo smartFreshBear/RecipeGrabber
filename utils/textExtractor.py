@@ -1,5 +1,6 @@
 import urllib.request
 import time
+import html2text
 
 from bs4 import BeautifulSoup
 
@@ -39,15 +40,25 @@ def get_text_from_url(url, retries = 5):
         headers = {'User-Agent': user_agent, }
         request = urllib.request.Request(url, None, headers)
 
-        html = urllib.request.urlopen(request).read()
-        soup = BeautifulSoup(html)
+        html = urllib.request.urlopen(request).read().decode('utf-8')
+
+
+
+        # soup = BeautifulSoup(html)
+
+        h = html2text.HTML2Text()
+        h.ignore_links = True
+        paragraphs = h.handle(html)
 
         # kill all script and style elements
-        for script in soup(["script", "style"]):
-         script.extract()    # rip it out
+        # for script in soup(["script", "style"]):
+        #  script.extract()    # rip it out
 
         # get text
-        paragraphs_raw = soup.get_text().split('\n\n\n')
+        # paragraphs_raw = soup.get_text().split('\n\n\n')
+
+        paragraphs_raw = paragraphs.split('\n\n')
+
 
         result_paragraph = []
         next_para_to_add = ''
