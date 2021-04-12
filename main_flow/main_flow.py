@@ -302,6 +302,25 @@ def predict_instru(text):
 
     return predicted
 
+def predict_ingri_probes(text):
+    vectorized_instr, instruction_lbls, vectorized_ingrid, ingrid_lbls = example_to_vector(text)
+
+    probes, caches = utils.core_methods.L_model_forward(vectorized_ingrid.T,
+                                             parameters=parameters_ingred)
+    ans = probes[0][1]
+
+    return ans
+
+
+def predict_instru_probes(text):
+    vectorized_instr, instruction_lbls, vectorized_ingrid, ingrid_lbls = example_to_vector(text)
+
+    probes = utils.core_methods.L_model_forward(vectorized_instr.T,
+                                             parameters=parameters_instr)
+    ans = probes[0][1]
+
+    return ans
+
 
 def run_threaded(job_func):
     job_thread = threading.Thread(target=job_func)

@@ -48,22 +48,22 @@ def get_text_from_url(url, retries = 5):
 
         h = html2text.HTML2Text()
         h.ignore_links = True
-        paragraphs = h.handle(html)
+        allText = h.handle(html)
 
         # kill all script and style elements
         # for script in soup(["script", "style"]):
         #  script.extract()    # rip it out
 
         # get text
-        # paragraphs_raw = soup.get_text().split('\n\n\n')
+        # paragraphs = soup.get_text().split('\n\n\n')
 
-        paragraphs_raw = paragraphs.split('\n\n')
+        paragraphs = allText.split('\n\n')
 
 
         result_paragraph = []
         next_para_to_add = ''
         separator_tolerance = SEPERATOR_TOLORANCE
-        for text in paragraphs_raw:
+        for text in paragraphs:
 
             if len(text.split(' ')) > MAX_WORDS_FOR_PARA:
                 text = text.split(' ')
@@ -97,6 +97,37 @@ def get_text_from_url(url, retries = 5):
             return get_text_from_url(url, retries)
         else:
             raise
+
+
+def get_all_text_from_url(url, retries = 5):
+    if retries == 0:
+        raise Exception("could not handle request")
+    try:
+        user_agent = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.7) Gecko/2009021910 Firefox/3.0.7'
+        headers = {'User-Agent': user_agent, }
+        request = urllib.request.Request(url, None, headers)
+
+        html = urllib.request.urlopen(request).read().decode('utf-8')
+
+        h = html2text.HTML2Text()
+        h.ignore_links = True
+        allText = h.handle(html)
+
+
+        paragraphs = allText.split('\n\n')
+
+
+        return allText
+    except Exception as exc:
+        if retries > 0:
+            print("an exception occurred while trying to access url {} trying again \n more details: {}"
+                  .format(url, exc))
+            time.sleep(1)
+            retries = retries - 1
+            return get_text_from_url(url, retries)
+        else:
+            raise
+
 
 
 def insert_text(next_para_to_add, result_paragraph):
