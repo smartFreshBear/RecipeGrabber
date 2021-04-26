@@ -5,8 +5,13 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="578bd6b3-8690-41ef-941c-7c15dd83aa36" name="Default Changelist" comment="improving: train, changing accuracy_print to error_percent, adding the function training_test_cv_divider.py">
+      <change afterPath="$PROJECT_DIR$/parsers/parser.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/token.pickle" beforeDir="false" afterPath="$PROJECT_DIR$/app/token.pickle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/app.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/parser/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/parsers/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/parser/parser.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/parser/resource/key_words_ingri.txt" beforeDir="false" afterPath="$PROJECT_DIR$/parsers/resource/key_words_ingri.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/parser/resource/key_words_instruc.txt" beforeDir="false" afterPath="$PROJECT_DIR$/parsers/resource/key_words_instruc.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -37,7 +42,13 @@
   <component name="PropertiesComponent">
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
-    <property name="settings.editor.selected.configurable" value="editor.preferences.fonts.default" />
+    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
+  </component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\roeen\PycharmProjects\RecipeGrabber\parsers\resource" />
+      <recent name="C:\Users\roeen\PycharmProjects\RecipeGrabber\parsers" />
+    </key>
   </component>
   <component name="RunManager" selected="Python.app">
     <configuration name="app" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
@@ -122,6 +133,16 @@
     <option name="localTasksCounter" value="4" />
     <servers />
   </component>
+  <component name="Vcs.Log.History.Properties">
+    <option name="COLUMN_ID_ORDER">
+      <list>
+        <option value="Default.Root" />
+        <option value="Default.Author" />
+        <option value="Default.Date" />
+        <option value="Default.Subject" />
+      </list>
+    </option>
+  </component>
   <component name="Vcs.Log.Tabs.Properties">
     <option name="TAB_STATES">
       <map>
@@ -144,11 +165,6 @@
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/app/app.py</url>
-          <line>23</line>
-          <option name="timeStamp" value="1" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/training/training_test_cv_divider.py</url>
           <line>21</line>
           <option name="timeStamp" value="36" />
@@ -162,7 +178,7 @@
     </breakpoint-manager>
     <watches-manager>
       <configuration name="PythonConfigurationType">
-        <watch expression="training_lbls" />
+        <watch expression="training_lbls" language="Python" />
       </configuration>
     </watches-manager>
   </component>
