@@ -4,14 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="578bd6b3-8690-41ef-941c-7c15dd83aa36" name="Default Changelist" comment="improving: train, changing accuracy_print to error_percent, adding the function training_test_cv_divider.py">
-      <change afterPath="$PROJECT_DIR$/parsers/parser.py" afterDir="false" />
+    <list default="true" id="578bd6b3-8690-41ef-941c-7c15dd83aa36" name="Default Changelist" comment="find_recipe_in_url_window_algo_based, improving parser.&#10;still needs a modification.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/app.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/parser/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/parsers/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/parser/parser.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/parser/resource/key_words_ingri.txt" beforeDir="false" afterPath="$PROJECT_DIR$/parsers/resource/key_words_ingri.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/parser/resource/key_words_instruc.txt" beforeDir="false" afterPath="$PROJECT_DIR$/parsers/resource/key_words_instruc.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -42,7 +36,7 @@
   <component name="PropertiesComponent">
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
-    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
+    <property name="settings.editor.selected.configurable" value="editor.preferences.fonts.default" />
   </component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
@@ -130,7 +124,14 @@
       <option name="project" value="LOCAL" />
       <updated>1614540815767</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="find_recipe_in_url_window_algo_based, improving parser.&#10;still needs a modification.">
+      <created>1619451907578</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1619451907578</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="Vcs.Log.History.Properties">
@@ -159,7 +160,8 @@
     <MESSAGE value="change the learning rate" />
     <MESSAGE value="supporting multiple choose" />
     <MESSAGE value="improving: train, changing accuracy_print to error_percent, adding the function training_test_cv_divider.py" />
-    <option name="LAST_COMMIT_MESSAGE" value="improving: train, changing accuracy_print to error_percent, adding the function training_test_cv_divider.py" />
+    <MESSAGE value="find_recipe_in_url_window_algo_based, improving parser.&#10;still needs a modification." />
+    <option name="LAST_COMMIT_MESSAGE" value="find_recipe_in_url_window_algo_based, improving parser.&#10;still needs a modification." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
