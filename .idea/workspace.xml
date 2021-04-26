@@ -5,7 +5,18 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="578bd6b3-8690-41ef-941c-7c15dd83aa36" name="Default Changelist" comment="find_recipe_in_url_window_algo_based, improving parser.&#10;still needs a modification.">
+      <change beforePath="$PROJECT_DIR$/.idea/RecipeGrabber.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/RecipeGrabber.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/app.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/data.pkl" beforeDir="false" afterPath="$PROJECT_DIR$/app/data.pkl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/parameters_ingred" beforeDir="false" afterPath="$PROJECT_DIR$/app/parameters_ingred" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/parameters_instr" beforeDir="false" afterPath="$PROJECT_DIR$/app/parameters_instr" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/token.pickle" beforeDir="false" afterPath="$PROJECT_DIR$/app/token.pickle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main_flow/main_flow.py" beforeDir="false" afterPath="$PROJECT_DIR$/main_flow/main_flow.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/parsers/parser.py" beforeDir="false" afterPath="$PROJECT_DIR$/parsers/parser.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/parsers/resource/key_words_instruc.txt" beforeDir="false" afterPath="$PROJECT_DIR$/parsers/resource/key_words_instruc.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/textExtractor.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/textExtractor.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -15,7 +26,7 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="issue1" />
+        <entry key="$PROJECT_DIR$" value="window_algorithm_part1" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -87,9 +98,31 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="parser" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="RecipeGrabber" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/parsers" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/parsers/parser.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <recent_temporary>
       <list>
         <item itemvalue="Python.app" />
+        <item itemvalue="Python.parser" />
         <item itemvalue="Python.core_methods" />
       </list>
     </recent_temporary>
@@ -167,20 +200,82 @@
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/training/training_test_cv_divider.py</url>
+          <url>file://$PROJECT_DIR$/parsers/parser.py</url>
           <line>21</line>
-          <option name="timeStamp" value="36" />
+          <option name="timeStamp" value="80" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/training/training_test_cv_divider.py</url>
+          <url>file://$PROJECT_DIR$/parsers/parser.py</url>
           <line>22</line>
-          <option name="timeStamp" value="37" />
+          <option name="timeStamp" value="81" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/app/app.py</url>
+          <line>90</line>
+          <option name="timeStamp" value="85" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/utils/textExtractor.py</url>
+          <line>36</line>
+          <option name="timeStamp" value="106" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/utils/textExtractor.py</url>
+          <line>38</line>
+          <option name="timeStamp" value="107" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/utils/textExtractor.py</url>
+          <line>39</line>
+          <option name="timeStamp" value="108" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/utils/textExtractor.py</url>
+          <line>113</line>
+          <option name="timeStamp" value="110" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/app/app.py</url>
+          <line>68</line>
+          <option name="timeStamp" value="111" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/utils/textExtractor.py</url>
+          <line>115</line>
+          <option name="timeStamp" value="112" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/app/app.py</url>
+          <line>98</line>
+          <option name="timeStamp" value="113" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/parsers/parser.py</url>
+          <line>53</line>
+          <option name="timeStamp" value="114" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/app/app.py</url>
+          <line>99</line>
+          <option name="timeStamp" value="115" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/parsers/parser.py</url>
+          <line>48</line>
+          <option name="timeStamp" value="116" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/app/app.py</url>
+          <line>71</line>
+          <option name="timeStamp" value="117" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
     <watches-manager>
       <configuration name="PythonConfigurationType">
         <watch expression="training_lbls" language="Python" />
+        <watch expression="main_flow.main_flow.predict_ingri_probes('\n'.join(text_window))" language="Python" />
+        <watch expression="main_flow.main_flow.predict_instru_probes(text_window)" language="Python" />
       </configuration>
     </watches-manager>
   </component>

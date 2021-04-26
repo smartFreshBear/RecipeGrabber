@@ -113,10 +113,6 @@ def get_all_text_from_url(url, retries = 5):
         h.ignore_links = True
         allText = h.handle(html)
 
-
-        paragraphs = allText.split('\n\n')
-
-
         return allText
     except Exception as exc:
         if retries > 0:
