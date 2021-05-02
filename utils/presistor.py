@@ -1,4 +1,4 @@
-import pickle
+import pickle5 as pickle
 
 
 def presist_parameters_to_disk(paramaters, name_of_params):
