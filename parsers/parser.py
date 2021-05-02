@@ -10,12 +10,12 @@ WINDOW_SIZE_INSTRUCT = 12
 # proceed_text only roots
 
 def get_key_words_ingred():
-    with open('../parsers/resource/key_words_ingri.txt') as f:
+    with open('../parsers/resource/key_words_ingri.txt', encoding="utf8") as f:
         return [line.replace('\n', "") for line in f.readlines()]
 
 
 def get_key_words_instr():
-    with open('../parsers/resource/key_words_instruc.txt') as f:
+    with open('../parsers/resource/key_words_instruc.txt', encoding="utf8") as f:
         return [line.replace('\n', "") for line in f.readlines()]
 
 

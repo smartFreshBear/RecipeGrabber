@@ -6,7 +6,7 @@ import requests
 import requests_cache
 
 import sched, time
-import pickle
+import pickle5 as pickle
 import threading
 
 import copy

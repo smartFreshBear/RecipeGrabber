@@ -8,15 +8,12 @@
       <change beforePath="$PROJECT_DIR$/.idea/RecipeGrabber.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/RecipeGrabber.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/app.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/data.pkl" beforeDir="false" afterPath="$PROJECT_DIR$/app/data.pkl" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/parameters_ingred" beforeDir="false" afterPath="$PROJECT_DIR$/app/parameters_ingred" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/parameters_instr" beforeDir="false" afterPath="$PROJECT_DIR$/app/parameters_instr" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/token.pickle" beforeDir="false" afterPath="$PROJECT_DIR$/app/token.pickle" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main_flow/main_flow.py" beforeDir="false" afterPath="$PROJECT_DIR$/main_flow/main_flow.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/parsers/parser.py" beforeDir="false" afterPath="$PROJECT_DIR$/parsers/parser.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/parsers/resource/key_words_instruc.txt" beforeDir="false" afterPath="$PROJECT_DIR$/parsers/resource/key_words_instruc.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/textExtractor.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/textExtractor.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/presistor.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/presistor.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -26,7 +23,7 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="window_algorithm_part1" />
+        <entry key="$PROJECT_DIR$" value="c5b2c347f5659df2853c7af80662daed456241a9" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
