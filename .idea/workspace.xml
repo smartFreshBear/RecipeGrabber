@@ -4,16 +4,16 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="578bd6b3-8690-41ef-941c-7c15dd83aa36" name="Default Changelist" comment="find_recipe_in_url_window_algo_based, improving parser.&#10;still needs a modification.">
-      <change beforePath="$PROJECT_DIR$/.idea/RecipeGrabber.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/RecipeGrabber.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+    <list default="true" id="578bd6b3-8690-41ef-941c-7c15dd83aa36" name="Default Changelist" comment="solving pickle problem">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/app.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/data.pkl" beforeDir="false" afterPath="$PROJECT_DIR$/app/data.pkl" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/parameters_ingred" beforeDir="false" afterPath="$PROJECT_DIR$/app/parameters_ingred" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/parameters_instr" beforeDir="false" afterPath="$PROJECT_DIR$/app/parameters_instr" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/token.pickle" beforeDir="false" afterPath="$PROJECT_DIR$/app/token.pickle" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main_flow/main_flow.py" beforeDir="false" afterPath="$PROJECT_DIR$/main_flow/main_flow.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data_loader/token.pickle" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data_loader/training_extractor.py" beforeDir="false" afterPath="$PROJECT_DIR$/data_loader/training_extractor.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/parsers/parser.py" beforeDir="false" afterPath="$PROJECT_DIR$/parsers/parser.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/presistor.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/presistor.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -44,16 +44,21 @@
   <component name="PropertiesComponent">
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
-    <property name="settings.editor.selected.configurable" value="editor.preferences.fonts.default" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/data_loader" />
+    <property name="settings.editor.selected.configurable" value="project.propVCSSupport.CommitDialog" />
   </component>
   <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\roeen\PycharmProjects\RecipeGrabber\data_loader" />
+      <recent name="C:\Users\roeen\PycharmProjects\RecipeGrabber\main_flow" />
+    </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\Users\roeen\PycharmProjects\RecipeGrabber\parsers\resource" />
       <recent name="C:\Users\roeen\PycharmProjects\RecipeGrabber\parsers" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.app">
-    <configuration name="app" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+  <component name="RunManager" selected="Python.training_extractor">
+    <configuration name="app" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
       <module name="RecipeGrabber" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -95,6 +100,27 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="main_flow" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="RecipeGrabber" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/main_flow" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/main_flow/main_flow.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="parser" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="RecipeGrabber" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -116,9 +142,31 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="training_extractor" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="RecipeGrabber" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/data_loader" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/data_loader/training_extractor.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.app" />
+        <item itemvalue="Python.training_extractor" />
+        <item itemvalue="Python.main_flow" />
         <item itemvalue="Python.parser" />
         <item itemvalue="Python.core_methods" />
       </list>
@@ -161,7 +209,14 @@
       <option name="project" value="LOCAL" />
       <updated>1619451907578</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="solving pickle problem">
+      <created>1619981705993</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1619981705993</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="Vcs.Log.History.Properties">
@@ -179,7 +234,24 @@
       <map>
         <entry key="MAIN">
           <value>
-            <State />
+            <State>
+              <option name="CUSTOM_BOOLEAN_PROPERTIES">
+                <map>
+                  <entry key="Show.Git.Branches" value="false" />
+                </map>
+              </option>
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="origin/improving_parser" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+            </State>
           </value>
         </entry>
       </map>
@@ -191,82 +263,175 @@
     <MESSAGE value="supporting multiple choose" />
     <MESSAGE value="improving: train, changing accuracy_print to error_percent, adding the function training_test_cv_divider.py" />
     <MESSAGE value="find_recipe_in_url_window_algo_based, improving parser.&#10;still needs a modification." />
-    <option name="LAST_COMMIT_MESSAGE" value="find_recipe_in_url_window_algo_based, improving parser.&#10;still needs a modification." />
+    <MESSAGE value="solving pickle problem" />
+    <option name="LAST_COMMIT_MESSAGE" value="solving pickle problem" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/parsers/parser.py</url>
-          <line>21</line>
-          <option name="timeStamp" value="80" />
+          <url>file://$PROJECT_DIR$/data_loader/training_extractor.py</url>
+          <line>106</line>
+          <option name="timeStamp" value="119" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/parsers/parser.py</url>
+          <url>file://$PROJECT_DIR$/data_loader/training_extractor.py</url>
+          <line>104</line>
+          <option name="timeStamp" value="120" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/data_loader/training_extractor.py</url>
+          <line>105</line>
+          <option name="timeStamp" value="121" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/data_loader/training_extractor.py</url>
+          <line>96</line>
+          <option name="timeStamp" value="128" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/data_loader/training_extractor.py</url>
           <line>22</line>
-          <option name="timeStamp" value="81" />
+          <option name="timeStamp" value="137" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/app/app.py</url>
-          <line>90</line>
-          <option name="timeStamp" value="85" />
+          <url>file://$PROJECT_DIR$/data_loader/training_extractor.py</url>
+          <line>87</line>
+          <option name="timeStamp" value="139" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/utils/textExtractor.py</url>
-          <line>36</line>
-          <option name="timeStamp" value="106" />
+          <url>file://$PROJECT_DIR$/data_loader/training_extractor.py</url>
+          <line>83</line>
+          <option name="timeStamp" value="140" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/utils/textExtractor.py</url>
-          <line>38</line>
-          <option name="timeStamp" value="107" />
+          <url>file://$PROJECT_DIR$/data_loader/training_extractor.py</url>
+          <line>91</line>
+          <option name="timeStamp" value="146" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/utils/textExtractor.py</url>
-          <line>39</line>
-          <option name="timeStamp" value="108" />
+          <url>file://$PROJECT_DIR$/data_loader/training_extractor.py</url>
+          <line>81</line>
+          <option name="timeStamp" value="150" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/utils/textExtractor.py</url>
-          <line>113</line>
-          <option name="timeStamp" value="110" />
+          <url>file://$PROJECT_DIR$/data_loader/training_extractor.py</url>
+          <line>77</line>
+          <option name="timeStamp" value="151" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/app/app.py</url>
-          <line>68</line>
-          <option name="timeStamp" value="111" />
+          <url>file://$PROJECT_DIR$/data_loader/training_extractor.py</url>
+          <line>30</line>
+          <option name="timeStamp" value="152" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/utils/textExtractor.py</url>
-          <line>115</line>
-          <option name="timeStamp" value="112" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/app/app.py</url>
+          <url>file://$PROJECT_DIR$/data_loader/training_extractor.py</url>
           <line>98</line>
-          <option name="timeStamp" value="113" />
+          <option name="timeStamp" value="153" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/data_loader/training_extractor.py</url>
+          <line>25</line>
+          <option name="timeStamp" value="154" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/parsers/parser.py</url>
-          <line>53</line>
-          <option name="timeStamp" value="114" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/app/app.py</url>
-          <line>99</line>
-          <option name="timeStamp" value="115" />
+          <line>100</line>
+          <option name="timeStamp" value="158" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/parsers/parser.py</url>
-          <line>48</line>
-          <option name="timeStamp" value="116" />
+          <line>101</line>
+          <option name="timeStamp" value="159" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/app/app.py</url>
+          <url>file://$PROJECT_DIR$/parsers/parser.py</url>
+          <line>107</line>
+          <option name="timeStamp" value="160" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/parsers/parser.py</url>
+          <line>81</line>
+          <option name="timeStamp" value="161" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/parsers/parser.py</url>
+          <line>69</line>
+          <option name="timeStamp" value="162" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/parsers/parser.py</url>
+          <line>73</line>
+          <option name="timeStamp" value="163" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/parsers/parser.py</url>
+          <line>37</line>
+          <option name="timeStamp" value="164" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/parsers/parser.py</url>
+          <line>38</line>
+          <option name="timeStamp" value="165" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/parsers/parser.py</url>
+          <line>29</line>
+          <option name="timeStamp" value="166" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/main_flow/main_flow.py</url>
+          <line>305</line>
+          <option name="timeStamp" value="167" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/main_flow/main_flow.py</url>
+          <line>208</line>
+          <option name="timeStamp" value="168" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/main_flow/main_flow.py</url>
+          <line>209</line>
+          <option name="timeStamp" value="169" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/main_flow/main_flow.py</url>
+          <line>66</line>
+          <option name="timeStamp" value="173" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/main_flow/main_flow.py</url>
+          <line>69</line>
+          <option name="timeStamp" value="174" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/main_flow/main_flow.py</url>
+          <line>34</line>
+          <option name="timeStamp" value="176" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/main_flow/main_flow.py</url>
+          <line>33</line>
+          <option name="timeStamp" value="177" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/main_flow/main_flow.py</url>
+          <line>332</line>
+          <option name="timeStamp" value="178" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/data_loader/training_extractor.py</url>
           <line>71</line>
-          <option name="timeStamp" value="117" />
+          <option name="timeStamp" value="179" />
         </line-breakpoint>
       </breakpoints>
+      <default-breakpoints>
+        <breakpoint type="python-exception">
+          <properties notifyOnTerminate="true" exception="BaseException">
+            <option name="notifyOnTerminate" value="true" />
+          </properties>
+        </breakpoint>
+      </default-breakpoints>
     </breakpoint-manager>
     <watches-manager>
       <configuration name="PythonConfigurationType">

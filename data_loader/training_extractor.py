@@ -1,6 +1,7 @@
 from __future__ import print_function
 import pickle
 import os.path
+import parsers.parser
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
@@ -18,7 +19,7 @@ SAMPLE_RANGE_NAME = 'A:C'
 """ TODO address + sheets from training set"""
 
 
-def load_all_training_examples(should_print = False, ignore_un_tagged = True):
+def load_all_training_examples(should_print=False, ignore_un_tagged=True):
     service = get_clinet_to_training_set()
 
     # Call the Sheets API
@@ -64,25 +65,35 @@ def get_clinet_to_training_set():
     return service
 
 
+# Takes url and writes to excel paragraph
 def populate_training_from_urls(url_list):
+    # load_steam_cache_from_disk()
     for url in url_list:
-
         text_lst = utils.textExtractor.get_text_from_url(url)
+        # new implementation of dividing text to paragraphs
+
+        # classified_paragraphs = parsers.parser.classify_text_to_paragraphs_from_url(url)
+        # ingr = classified_paragraphs["ingredients"]
+        # instr = classified_paragraphs["instructions"]
+        # none_recipe_paragraphs = classified_paragraphs["none_recipe_paragraphs"]
+
+        values_to_db = [['\n'.join(ingr), 1, 0], ['\n'.join(instr), 0, 1]]
+        none_recipe_db_formed_paragraphs = [['\n'.join(none_recipe_paragraph), 0, 0] for none_recipe_paragraph in none_recipe_paragraphs]
+        values_to_db += none_recipe_db_formed_paragraphs
 
         clinet = get_clinet_to_training_set()
 
         values_to_db = [[text, '?', '?'] for text in text_lst]
-
 
         body = {
             'values': values_to_db
         }
 
         request = clinet.spreadsheets().values().append(spreadsheetId=SAMPLE_SPREADSHEET_ID,
-                                                         range=SAMPLE_RANGE_NAME,
-                                                         valueInputOption='RAW',
-                                                         insertDataOption='INSERT_ROWS',
-                                                         body=body)
+                                                        range=SAMPLE_RANGE_NAME,
+                                                        valueInputOption='RAW',
+                                                        insertDataOption='INSERT_ROWS',
+                                                        body=body)
         response = request.execute()
 
         print('{0} cells appended.'.format(response \
@@ -90,8 +101,7 @@ def populate_training_from_urls(url_list):
                                            .get('updatedCells')))
 
 
-
 if __name__ == '__main__':
-    my_file_handle = open("D:\\ML\\RecipeGrabber\\data_loader\\resources\\urls.txt", encoding='utf-8')
+    my_file_handle = open("../data_loader/resources/urls.txt", encoding='utf-8')
     url_lst = my_file_handle.read().split('\n')
     populate_training_from_urls(url_lst)

@@ -60,46 +60,17 @@ def find_recipe_in_url():
     return answer
 
 
+
 @app.route('/find_recipe_in_url_new/', methods=['POST'])
-def find_recipe_in_url_window_algo_based():
-    url = request.form['url']
+def find_recipe_in_url_algo_base():
     instructions = request.form['instructions'].lower() == "true"
     ingredients = request.form['ingredients'].lower() == "true"
-
-    all_text = textExtractor.get_all_text_from_url(url=url)
-    lines_of_text = list(filter(None, all_text.split('\n')))
-
-    all_relevant_ingred_indies = parsers.parser.find_line_with_key_word(lines_of_text, True)
-    all_relevant_instr_indies = parsers.parser.find_line_with_key_word(lines_of_text, False)
-
-    max_num_of_lines_ingred = 0
-    max_num_of_lines_instr = 0
-
-    # find ingred paragraph with max number of lines
-    for i in range(0, len(all_relevant_ingred_indies)):
-        first_line = all_relevant_ingred_indies[i]
-        last_line = parsers.parser.find_last_index_if_ingred(first_line, lines_of_text)
-        new_size_of_text = last_line - first_line
-        if new_size_of_text > max_num_of_lines_ingred:
-            first_line_ingred = first_line
-            last_line_ingred = last_line
-            max_num_of_lines_ingred = new_size_of_text
-
-
-    # find instr paragraph with max number of lines
-    for i in range(0, len(all_relevant_instr_indies)):
-        first_line = all_relevant_instr_indies[i]
-        last_line = parsers.parser.find_last_index_if_instruc(first_line, lines_of_text)
-        new_size_of_text = last_line - first_line
-        if new_size_of_text > max_num_of_lines_instr:
-            first_line_instr = first_line
-            last_line_instr = last_line
-            max_num_of_lines_instr = new_size_of_text
-
-    ingred_paragraph = parsers.parser.get_paragraph_from_indexes(first_line_ingred, last_line_ingred, lines_of_text)
-    instr_paragraph = parsers.parser.get_paragraph_from_indexes(first_line_instr, last_line_instr, lines_of_text)
-
-    return {'ingredients': ingred_paragraph, 'instructions': instr_paragraph}
+    url = request.form['url']
+    classified_paragraphs = parsers.parser.classify_text_to_paragraphs_from_url(url)
+    # We don't need the send back none_recipe_paragraphs
+    if 'none_recipe_paragraphs' in classified_paragraphs:
+        del classified_paragraphs['none_recipe_paragraphs']
+    return classified_paragraphs
 
 
 if __name__ == '__main__':
