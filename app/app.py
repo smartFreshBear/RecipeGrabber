@@ -1,6 +1,7 @@
 from flask import Flask
 from flask import request
 import os
+import re
 
 import numpy as np
 import main_flow
@@ -85,7 +86,6 @@ def find_recipe_in_url_window_algo_based():
             last_line_ingred = last_line
             max_num_of_lines_ingred = new_size_of_text
 
-
     # find instr paragraph with max number of lines
     for i in range(0, len(all_relevant_instr_indies)):
         first_line = all_relevant_instr_indies[i]
@@ -99,7 +99,21 @@ def find_recipe_in_url_window_algo_based():
     ingred_paragraph = parsers.parser.get_paragraph_from_indexes(first_line_ingred, last_line_ingred, lines_of_text)
     instr_paragraph = parsers.parser.get_paragraph_from_indexes(first_line_instr, last_line_instr, lines_of_text)
 
+    ingred_paragraph = remove_unwanted_patterns(ingred_paragraph)
+    instr_paragraph = remove_unwanted_patterns(instr_paragraph)
+
     return {'ingredients': ingred_paragraph, 'instructions': instr_paragraph}
+
+
+def remove_unwanted_patterns(text):
+    # Regex for removing all urls and file path:
+    # First group is for matching file path
+    # After the boolean or '|' groups that match all URI
+    url_regex = r'([\w]+(\/.*?\.[\w:]+))|([\w+]+\:\/\/)?([\w\d-]+\.)*[\w-]+[\.\:]\w+([\/\?\=\&\#.]?[-\w\+\,\%\=\'\"\:\/]+)*\/?'
+    fixed_doc = []
+    for row in text:
+        fixed_doc.append(re.sub(url_regex, '',row))
+    return fixed_doc
 
 
 if __name__ == '__main__':
