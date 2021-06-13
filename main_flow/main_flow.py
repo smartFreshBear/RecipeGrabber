@@ -325,8 +325,8 @@ def run_threaded(job_func):
     job_thread.start()
 
 
-parameters_instructions = {}
-parameters_ingri = {}
+parameters_instr = {}
+parameters_ingred = {}
 
 
 def main():
@@ -339,7 +339,7 @@ def main():
     parameters_instr = presistor.load_parameter_cache_from_disk(INSTRUCTION_NAME)
     parameters_ingred = presistor.load_parameter_cache_from_disk(INGRED_NAME)
 
-    if parameters_ingri == {} or parameters_instructions == {}:
+    if parameters_ingred == {} or parameters_instr == {}:
         parameters_instr = train(4, learning_rate=0.5, num_iterations=170, name_group=INSTRUCTION_NAME)
         parameters_ingred = train(4, learning_rate=0.5, num_iterations=175, name_group=INGRED_NAME)
 

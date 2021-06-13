@@ -1,20 +1,18 @@
+import glob
+
 import main_flow.main_flow
 from utils import textExtractor
 ACCEPTANCE_THRESHOLD = 0.3
 
 WINDOW_SIZE_PARAGRAPH = 20
 
-
-
-# proceed_text only roots
-
 def get_key_words_ingred():
-    with open('../parsers/resource/key_words_ingri.txt', encoding="utf8") as f:
+    with open('parsers/resource/key_words_ingri.txt', encoding="utf8") as f:
         return [line.replace('\n', "") for line in f.readlines()]
 
 
 def get_key_words_instr():
-    with open('../parsers/resource/key_words_instruc.txt', encoding="utf8") as f:
+    with open('./parsers/resource/key_words_instruc.txt', encoding="utf8") as f:
         return [line.replace('\n', "") for line in f.readlines()]
 
 
