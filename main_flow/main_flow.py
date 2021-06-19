@@ -246,32 +246,36 @@ def enrich_tables_vector(table, vectorized_ingrid, vectorized_instr):
     enrich_ratio_word_to_numbers(vectorized_instr, table)
 
 
-def train(num_of_neurons_in_hidden_layer, learning_rate, num_iterations, name_group):
+def train(num_of_neurons_in_hidden_layer, learning_rate, num_iterations, name_group, test_error_tolerance):
     load_data()
 
-    training_ex, training_labels, validation_ex, validation_labels, test_ex, test_labels = \
-        training_test_cv_divider.divided_training_test(FROM_NAME_TO_LABELS[name_group][0],
-                                                       FROM_NAME_TO_LABELS[name_group][1], 0.8)
-
     layers_dims = [TOP_WORD_NUM + EXTRA_FEATURES_NUM, num_of_neurons_in_hidden_layer, 1]
+    test_error = 10
+    parameters = {}
 
-    parameters = utils.L_layer_network.L_layer_model(training_ex.T,
-                                                     training_labels.T,
-                                                     layers_dims,
-                                                     learning_rate,
-                                                     num_iterations,
-                                                     print_cost=False,
-                                                     plot=False)
+    while test_error_tolerance < test_error:
 
-    presistor.presist_parameters_to_disk(parameters, name_group)
+        training_ex, training_labels, validation_ex, validation_labels, test_ex, test_labels = \
+        training_test_cv_divider.divided_training_test(FROM_NAME_TO_LABELS[name_group][0],
+                                                               FROM_NAME_TO_LABELS[name_group][1], 0.8)
 
-    train_error = error_percent(training_ex, training_labels, parameters)
-    validation_error = error_percent(validation_ex, validation_labels, parameters)
-    test_error = error_percent(test_ex, test_labels, parameters)
+        parameters = utils.L_layer_network.L_layer_model(training_ex.T,
+                                                         training_labels.T,
+                                                         layers_dims,
+                                                         learning_rate,
+                                                         num_iterations,
+                                                         print_cost=False,
+                                                         plot=False)
 
-    print("training {0} error: {1} ".format(name_group, str(train_error)))
-    print("validation {0} instruction error : {1} ".format(name_group, str(validation_error)))
-    print("test {0} instruction error : {1} ".format(name_group, str(test_error)))
+        presistor.presist_parameters_to_disk(parameters, name_group)
+
+        train_error = error_percent(training_ex, training_labels, parameters)
+        validation_error = error_percent(validation_ex, validation_labels, parameters)
+        test_error = error_percent(test_ex, test_labels, parameters)
+
+        print("training {0} error: {1} ".format(name_group, str(train_error)))
+        print("validation {0} error : {1} ".format(name_group, str(validation_error)))
+        print("test {0} error : {1} ".format(name_group, str(test_error)))
 
     return parameters
 
@@ -335,13 +339,14 @@ def main():
     global parameters_instr
     global parameters_ingred
     global FROM_NAME_TO_LABELS
-
-    parameters_instr = presistor.load_parameter_cache_from_disk(INSTRUCTION_NAME)
-    parameters_ingred = presistor.load_parameter_cache_from_disk(INGRED_NAME)
+    #
+    # parameters_instr = presistor.load_parameter_cache_from_disk(INSTRUCTION_NAME)
+    # parameters_ingred = presistor.load_parameter_cache_from_disk(INGRED_NAME)
 
     if parameters_ingred == {} or parameters_instr == {}:
-        parameters_instr = train(4, learning_rate=0.5, num_iterations=170, name_group=INSTRUCTION_NAME)
-        parameters_ingred = train(4, learning_rate=0.5, num_iterations=175, name_group=INGRED_NAME)
+        parameters_instr = train(4, learning_rate=0.5, num_iterations=170, name_group=INSTRUCTION_NAME,
+                                 test_error_tolerance=0.037)
+        parameters_ingred = train(4, learning_rate=0.5, num_iterations=175, name_group=INGRED_NAME, test_error_tolerance=0.015)
 
     run_threaded(start_periodic)
 

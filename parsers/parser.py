@@ -1,11 +1,11 @@
-import glob
-
 import main_flow.main_flow
 
-ACCEPTANCE_BENCHMARK = 0.2
+ACCEPTANCE_BENCHMARK_INGRID = 0.02
+ACCEPTANCE_BENCHMARK_INSTRU = 0.0742
 
-WINDOW_SIZE_INGRID = 10
-WINDOW_SIZE_INSTRUCT = 12
+
+WINDOW_SIZE_INGRID = 5
+WINDOW_SIZE_INSTRUCT = 8
 
 def get_key_words_ingred():
     with open('parsers/resource/key_words_ingri.txt', encoding="utf8") as f:
@@ -13,7 +13,7 @@ def get_key_words_ingred():
 
 
 def get_key_words_instr():
-    with open('./parsers/resource/key_words_instruc.txt', encoding="utf8") as f:
+    with open('parsers/resource/key_words_instruc.txt', encoding="utf8") as f:
         return [line.replace('\n', "") for line in f.readlines()]
 
 
@@ -27,11 +27,11 @@ def get_paragraph_from_indexes(first_line, last_line, lines_of_text):
 
 
 def is_window_valid_ingred(text_window):
-    return ACCEPTANCE_BENCHMARK < main_flow.main_flow.predict_ingri_probes('\n'.join(text_window))
+    return ACCEPTANCE_BENCHMARK_INGRID < main_flow.main_flow.predict_ingri_probes('\n'.join(text_window))
 
 
 def is_window_valid_instr(text_window):
-    return ACCEPTANCE_BENCHMARK < main_flow.main_flow.predict_instru_probes('\n'.join(text_window))
+    return ACCEPTANCE_BENCHMARK_INSTRU < main_flow.main_flow.predict_instru_probes('\n'.join(text_window))
 
 
 def find_last_index_if_ingred(line_num, lines_of_text):
@@ -40,7 +40,7 @@ def find_last_index_if_ingred(line_num, lines_of_text):
     while is_window_valid_ingred(text_window):
         line += 1
         text_window = get_paragraph_from_indexes(line, line + WINDOW_SIZE_INGRID, lines_of_text)
-    return line + 1
+    return line + WINDOW_SIZE_INGRID - 1
 
 
 def find_last_index_if_instruc(line_num, lines_of_text):
@@ -49,7 +49,7 @@ def find_last_index_if_instruc(line_num, lines_of_text):
     while is_window_valid_instr(text_window):
         line += 1
         text_window = get_paragraph_from_indexes(line, line + WINDOW_SIZE_INSTRUCT, lines_of_text)
-    return line + 1
+    return line + WINDOW_SIZE_INSTRUCT - 1
 
 
 def find_line_with_key_word(lines_of_text, ingredients):
