@@ -1,6 +1,8 @@
 from flask import Flask
 from flask import request
-import os
+import os, sys
+
+print(sys.path.append(os.getcwd()))
 
 import numpy as np
 import main_flow
@@ -103,8 +105,8 @@ def find_recipe_in_url_window_algo_based():
 
 
 if __name__ == '__main__':
-    app.run()
-
-
-def main():
-    app.run()
+    import gevent
+    from geventwebsocket.handler import WebSocketHandler
+    server = gevent.pywsgi.WSGIServer( (u'0.0.0.0', 5000), app, handler_class=WebSocketHandler )
+    server.serve_forever()
+    #app.run()

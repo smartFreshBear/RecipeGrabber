@@ -1,0 +1,98 @@
+ * Serving Flask app "/home/ubuntu/RecipeGrabber/app/app.py"
+ * Environment: production
+   WARNING: This is a development server. Do not use it in a production deployment.
+   Use a production WSGI server instead.
+ * Debug mode: off
+Usage: flask run [OPTIONS]
+
+Error: While importing "app.app", an ImportError was raised:
+
+Traceback (most recent call last):
+  File "/home/ubuntu/my_app/env/lib/python3.8/site-packages/flask/cli.py", line 240, in locate_app
+    __import__(module_name)
+  File "/home/ubuntu/RecipeGrabber/app/app.py", line 6, in <module>
+    import main_flow
+  File "/home/ubuntu/RecipeGrabber/main_flow/__init__.py", line 1, in <module>
+    from data_loader import training_extractor
+  File "/home/ubuntu/RecipeGrabber/data_loader/__init__.py", line 1, in <module>
+    from . import training_extractor
+  File "/home/ubuntu/RecipeGrabber/data_loader/training_extractor.py", line 7, in <module>
+    import utils.textExtractor
+  File "/home/ubuntu/RecipeGrabber/utils/textExtractor.py", line 3, in <module>
+    import html2text
+ModuleNotFoundError: No module named 'html2text'
+
+ * Serving Flask app "/home/ubuntu/RecipeGrabber/app/app.py"
+ * Environment: production
+   WARNING: This is a development server. Do not use it in a production deployment.
+   Use a production WSGI server instead.
+ * Debug mode: off
+Traceback (most recent call last):
+  File "/home/ubuntu/my_app/env/bin/flask", line 8, in <module>
+    sys.exit(main())
+  File "/home/ubuntu/my_app/env/lib/python3.8/site-packages/flask/cli.py", line 967, in main
+    cli.main(args=sys.argv[1:], prog_name="python -m flask" if as_module else None)
+  File "/home/ubuntu/my_app/env/lib/python3.8/site-packages/flask/cli.py", line 586, in main
+    return super(FlaskGroup, self).main(*args, **kwargs)
+  File "/home/ubuntu/my_app/env/lib/python3.8/site-packages/click/core.py", line 782, in main
+    rv = self.invoke(ctx)
+  File "/home/ubuntu/my_app/env/lib/python3.8/site-packages/click/core.py", line 1259, in invoke
+    return _process_result(sub_ctx.command.invoke(sub_ctx))
+  File "/home/ubuntu/my_app/env/lib/python3.8/site-packages/click/core.py", line 1066, in invoke
+    return ctx.invoke(self.callback, **ctx.params)
+  File "/home/ubuntu/my_app/env/lib/python3.8/site-packages/click/core.py", line 610, in invoke
+    return callback(*args, **kwargs)
+  File "/home/ubuntu/my_app/env/lib/python3.8/site-packages/click/decorators.py", line 73, in new_func
+    return ctx.invoke(f, obj, *args, **kwargs)
+  File "/home/ubuntu/my_app/env/lib/python3.8/site-packages/click/core.py", line 610, in invoke
+    return callback(*args, **kwargs)
+  File "/home/ubuntu/my_app/env/lib/python3.8/site-packages/flask/cli.py", line 848, in run_command
+    app = DispatchingApp(info.load_app, use_eager_loading=eager_loading)
+  File "/home/ubuntu/my_app/env/lib/python3.8/site-packages/flask/cli.py", line 305, in __init__
+    self._load_unlocked()
+  File "/home/ubuntu/my_app/env/lib/python3.8/site-packages/flask/cli.py", line 330, in _load_unlocked
+    self._app = rv = self.loader()
+  File "/home/ubuntu/my_app/env/lib/python3.8/site-packages/flask/cli.py", line 388, in load_app
+    app = locate_app(self, import_name, name)
+  File "/home/ubuntu/my_app/env/lib/python3.8/site-packages/flask/cli.py", line 240, in locate_app
+    __import__(module_name)
+  File "/home/ubuntu/RecipeGrabber/app/app.py", line 8, in <module>
+    import parsers.parser
+  File "/home/ubuntu/RecipeGrabber/parsers/parser.py", line 22, in <module>
+    key_words_ingred = get_key_words_ingred()
+  File "/home/ubuntu/RecipeGrabber/parsers/parser.py", line 13, in get_key_words_ingred
+    with open('../parsers/resource/key_words_ingri.txt') as f:
+FileNotFoundError: [Errno 2] No such file or directory: '../parsers/resource/key_words_ingri.txt'
+ * Serving Flask app "/home/ubuntu/RecipeGrabber/app/app.py"
+ * Environment: production
+   WARNING: This is a development server. Do not use it in a production deployment.
+   Use a production WSGI server instead.
+ * Debug mode: off
+Usage: flask run [OPTIONS]
+
+Error: While importing "app.app", an ImportError was raised:
+
+Traceback (most recent call last):
+  File "/home/ubuntu/my_app/env/lib/python3.8/site-packages/flask/cli.py", line 240, in locate_app
+    __import__(module_name)
+  File "/home/ubuntu/RecipeGrabber/app/app.py", line 6, in <module>
+    import main_flow
+  File "/home/ubuntu/RecipeGrabber/main_flow/__init__.py", line 1, in <module>
+    from data_loader import training_extractor
+  File "/home/ubuntu/RecipeGrabber/data_loader/__init__.py", line 1, in <module>
+    from . import training_extractor
+  File "/home/ubuntu/RecipeGrabber/data_loader/training_extractor.py", line 7, in <module>
+    import utils.textExtractor
+  File "/home/ubuntu/RecipeGrabber/utils/__init__.py", line 4, in <module>
+    from . import presistor
+  File "/home/ubuntu/RecipeGrabber/utils/presistor.py", line 1, in <module>
+    import pickle5 as pickle
+ModuleNotFoundError: No module named 'pickle5'
+
+ * Serving Flask app "/home/ubuntu/RecipeGrabber/app/app.py"
+ * Environment: production
+   WARNING: This is a development server. Do not use it in a production deployment.
+   Use a production WSGI server instead.
+ * Debug mode: off
+ * Running on http://0.0.0.0:5000/ (Press CTRL+C to quit)
+147.161.13.35 - - [29/May/2021 18:29:42] "[37mPOST /find_recipe_in_url_new/?url=https://www.hashulchan.co.il/מתכונים/סינייה-סביח/&ingredients=true&instructions=true HTTP/1.1[0m" 200 -

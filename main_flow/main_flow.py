@@ -336,8 +336,8 @@ def main():
     global parameters_ingred
     global FROM_NAME_TO_LABELS
 
-    parameters_instr = presistor.load_parameter_cache_from_disk(INSTRUCTION_NAME)
-    parameters_ingred = presistor.load_parameter_cache_from_disk(INGRED_NAME)
+    #parameters_instr = presistor.load_parameter_cache_from_disk(INSTRUCTION_NAME)
+    #parameters_ingred = presistor.load_parameter_cache_from_disk(INGRED_NAME)
 
     if parameters_ingred == {} or parameters_instr == {}:
         parameters_instr = train(4, learning_rate=0.5, num_iterations=170, name_group=INSTRUCTION_NAME)
