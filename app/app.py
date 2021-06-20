@@ -6,6 +6,8 @@ from flask import request
 import main_flow
 import parsers.parser
 from utils import textExtractor
+import gevent
+from geventwebsocket.handler import WebSocketHandler
 
 app = Flask(__name__)
 
@@ -109,8 +111,6 @@ def find_recipe_in_url_window_algo_based():
 
 
 if __name__ == '__main__':
-    app.run()
-
-
-def main():
-    app.run()
+    server = gevent.pywsgi.WSGIServer( (u'0.0.0.0', 5000), app, handler_class=WebSocketHandler )
+    server.serve_forever()
+    #app.run()
