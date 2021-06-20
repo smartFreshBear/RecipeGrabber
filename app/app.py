@@ -1,10 +1,14 @@
+
 import os
+import sys
 
 from flask import Flask
 from flask import request
 
-import main_flow
+print(sys.path.append(os.getcwd()))
 import parsers.parser
+
+import main_flow
 from utils import textExtractor
 import gevent
 from geventwebsocket.handler import WebSocketHandler
