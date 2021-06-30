@@ -5,6 +5,14 @@ import sys
 from flask import Flask
 from flask import request
 
+
+import django
+from django.conf import settings
+from django.template import Template, Context
+TEMPLATES = [{'BACKEND':  'django.template.backends.django.DjangoTemplates'}]
+settings.configure(TEMPLATES=TEMPLATES)
+django.setup()
+
 print(sys.path.append(os.getcwd()))
 import parsers.parser
 
@@ -24,6 +32,22 @@ main_flow.main_flow.main()
 AMOUNT_OF_LINES = 7
 
 print("server is up and running :)")
+
+templateHtml = """
+<!DOCTYPE html>
+<html lang="en">
+   <h1 style="color: #5e9ca0; text-align: right;">:המתכון</h1>
+   <h2 style="color: #2e6c80; text-align: right;">:מצרכים</h2>
+   <ol style="list-style-type: hebrew; direction: rtl;">
+      <p style="text-align: right;">{{ingredients}}</p>
+   </ol>
+   <h2 style="color: #2e6c80; text-align: right;">:הוראות הכנה</h2>
+   <p style="text-align: right;">{{instructions}}</p>
+   <p><strong>&nbsp;</strong></p>
+</html>
+"""
+
+template = Template(templateHtml)
 
 
 @app.route('/isServerUp')
@@ -66,6 +90,16 @@ def find_recipe_in_url():
     return answer
 
 
+@app.route('/bottom_line_recipe_for/', methods=['GET'])
+def bottom_line_recipe_for():
+    url = request.args.get('url')
+    ingredients, instructions = extract(True, True, url)
+
+    c = Context({"ingredients": '\n'.join(ingredients),
+                 "instructions": '\n '.join(instructions)})
+
+    return template.render(c)
+
 @app.route('/find_recipe_in_url_new/', methods=['POST'])
 def find_recipe_in_url_window_algo_based():
     url = request.form['url']
@@ -73,12 +107,17 @@ def find_recipe_in_url_window_algo_based():
     instructions = request.form['instructions'].lower() == "true"
     ingredients = request.form['ingredients'].lower() == "true"
 
+    ingred_paragraph, instr_paragraph = extract(ingredients, instructions, url)
+
+    return {'ingredients': ingred_paragraph,
+            'instructions': instr_paragraph}
+
+
+def extract(ingredients, instructions, url):
     ingred_paragraph = {}
     instr_paragraph = {}
-
     all_text = textExtractor.get_all_text_from_url(url=url)
     lines_of_text = list(filter(None, all_text.split('\n')))
-
     if ingredients:
         all_relevant_ingred_indies = parsers.parser.find_line_with_key_word(lines_of_text, True)
         max_num_of_lines_ingred = 0
@@ -94,7 +133,6 @@ def find_recipe_in_url_window_algo_based():
                 max_num_of_lines_ingred = new_size_of_text
                 ingred_paragraph = parsers.parser.get_paragraph_from_indexes(first_line_ingred, last_line_ingred,
                                                                              lines_of_text)
-
     if instructions:
         # find instr paragraph with max number of lines
         all_relevant_instr_indies = parsers.parser.find_line_with_key_word(lines_of_text, False)
@@ -108,10 +146,9 @@ def find_recipe_in_url_window_algo_based():
                 first_line_instr = first_line
                 last_line_instr = last_line
                 max_num_of_lines_instr = new_size_of_text
-                instr_paragraph = parsers.parser.get_paragraph_from_indexes(first_line_instr, last_line_instr, lines_of_text)
-
-    return {'ingredients': ingred_paragraph,
-            'instructions': instr_paragraph}
+                instr_paragraph = parsers.parser.get_paragraph_from_indexes(first_line_instr, last_line_instr,
+                                                                            lines_of_text)
+    return ingred_paragraph, instr_paragraph
 
 
 if __name__ == '__main__':
