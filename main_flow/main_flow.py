@@ -5,7 +5,7 @@ import data_loader
 import requests
 import requests_cache
 
-import sched, time
+import time
 import pickle5 as pickle
 import threading
 
@@ -17,35 +17,52 @@ import numpy as np
 from training import training_test_cv_divider
 from utils import presistor
 
-INGRED_NAME = 'parameters_ingred'
+CYCLE_TIME_TO_SAVE_CACHE = 60 * 60
 
-INSTRUCTION_NAME = 'parameters_instr'
+# Cache file names:
+INSTRUCTIONS_PARAMS = 'inst_params.pkl'
+INSTRUCTIONS_TOP_WORDS = 'inst_top_words.pkl'
+
+INGREDIENTS_PARAMS = 'ing_params.pkl'
+INGREDIENTS_TOP_WORDS = 'ing_top_words.pkl'
+
 
 HEBREW_NLP_END_POINT = 'https://hebrew-nlp.co.il/service/Morphology/Normalize'
 
 requests_cache.install_cache(cache_name='hebrew_roots', backend='sqlite', expire_after=60 * 60 * 24 * 100)
 
-scheduler = sched.scheduler(time.time, time.sleep)
 
+def loadCache():
+    global parameters_instr
+    global parameters_ingred
+    global top_instru_dict
+    global top_ingri_dict
 
-def load_steam_cache_from_disk():
+    parameters_instr = presistor.load_parameter_cache_from_disk(INSTRUCTIONS_PARAMS)
+    parameters_ingred = presistor.load_parameter_cache_from_disk(INGREDIENTS_PARAMS)
+    top_instru_dict = presistor.load_parameter_cache_from_disk(INSTRUCTIONS_TOP_WORDS)
+    top_ingri_dict = presistor.load_parameter_cache_from_disk(INGREDIENTS_TOP_WORDS)
+
     try:
         with open('data.pkl', 'rb') as handle:
             global from_word_to_steam_cache
             from_word_to_steam_cache = pickle.load(handle)
-    except EOFError:
+    except Exception:
         from_word_to_steam_cache = {}
 
-
-def start_periodic():
-    scheduler.enter(60, 1, periodically_save_cache, (scheduler,))
-    scheduler.run()
+    return parameters_instr and parameters_ingred and top_instru_dict and top_ingri_dict
 
 
-def periodically_save_cache(sc):
-    with open('data.pkl', 'wb') as handle:
-        pickle.dump(from_word_to_steam_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
-    scheduler.enter(60, 1, periodically_save_cache, (sc,))
+def periodically_save_cache():
+
+    while True:
+        # Wait for new data to accumulate
+        time.sleep(CYCLE_TIME_TO_SAVE_CACHE)
+
+        # Save to disk
+        with open('data.pkl', 'wb') as handle:
+            pickle.dump(from_word_to_steam_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
 
 
 TOP_WORD_NUM = 150
@@ -192,16 +209,19 @@ def count_amount_of_n_digits(numbers, digit_count):
 def load_data():
     table = data_loader.training_extractor.load_all_training_examples(False)
     steamed_dict = steamimfy(table)
-    top_instruction_words, top_ingridiates_words = top_words(steamed_dict, TOP_WORD_NUM)
+    top_instruction_words, top_ingredients_words = top_words(steamed_dict, TOP_WORD_NUM)
+
+    # Save dictionaries to disk for caching
+    presistor.presist_parameters_to_disk(top_instruction_words, INSTRUCTIONS_TOP_WORDS)
+    presistor.presist_parameters_to_disk(top_ingredients_words, INGREDIENTS_TOP_WORDS)
+
     vectorized_instr, instruction_lbls = vectorized(steamed_dict, top_instruction_words, 2)
-    vectorized_ingrid, ingrid_lbls = vectorized(steamed_dict, top_ingridiates_words, 1)
+    vectorized_ingrid, ingrid_lbls = vectorized(steamed_dict, top_ingredients_words, 1)
 
     enrich_tables_vector(table, vectorized_ingrid, vectorized_instr)
 
-    FROM_NAME_TO_LABELS[INSTRUCTION_NAME] = [vectorized_instr, instruction_lbls]
-    FROM_NAME_TO_LABELS[INGRED_NAME] = [vectorized_ingrid, ingrid_lbls]
-
-    return vectorized_instr, instruction_lbls, vectorized_ingrid, ingrid_lbls
+    FROM_NAME_TO_LABELS[INSTRUCTIONS_PARAMS] = [vectorized_instr, instruction_lbls]
+    FROM_NAME_TO_LABELS[INGREDIENTS_PARAMS] = [vectorized_ingrid, ingrid_lbls]
 
 
 def example_to_vector(txt):
@@ -247,7 +267,6 @@ def enrich_tables_vector(table, vectorized_ingrid, vectorized_instr):
 
 
 def train(num_of_neurons_in_hidden_layer, learning_rate, num_iterations, name_group):
-    load_data()
 
     training_ex, training_labels, validation_ex, validation_labels, test_ex, test_labels = \
         training_test_cv_divider.divided_training_test(FROM_NAME_TO_LABELS[name_group][0],
@@ -320,30 +339,17 @@ def predict_instru_probes(text):
     return ans
 
 
-def run_threaded(job_func):
-    job_thread = threading.Thread(target=job_func)
-    job_thread.start()
-
-
-parameters_instr = {}
-parameters_ingred = {}
-
-
 def main():
-    load_steam_cache_from_disk()
-
-    global parameters_instr
-    global parameters_ingred
     global FROM_NAME_TO_LABELS
 
-    parameters_instr = presistor.load_parameter_cache_from_disk(INSTRUCTION_NAME)
-    parameters_ingred = presistor.load_parameter_cache_from_disk(INGRED_NAME)
+    if not loadCache():
+        load_data()
+        parameters_instr = train(4, learning_rate=0.5, num_iterations=170, name_group=INSTRUCTIONS_PARAMS)
+        parameters_ingred = train(4, learning_rate=0.5, num_iterations=175, name_group=INGREDIENTS_PARAMS)
 
-    if parameters_ingred == {} or parameters_instr == {}:
-        parameters_instr = train(4, learning_rate=0.5, num_iterations=170, name_group=INSTRUCTION_NAME)
-        parameters_ingred = train(4, learning_rate=0.5, num_iterations=175, name_group=INGRED_NAME)
 
-    run_threaded(start_periodic)
+    caching_thread = threading.Thread(target=periodically_save_cache)
+    caching_thread.start()
 
 
 if __name__ == '__main__':
