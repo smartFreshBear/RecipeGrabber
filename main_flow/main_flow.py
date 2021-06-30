@@ -65,7 +65,7 @@ def periodically_save_cache():
 
 
 
-TOP_WORD_NUM = 150
+TOP_WORD_NUM = 1500
 EXTRA_FEATURES_NUM = 14
 
 NEW_LINE_TO_WORD_RATIO_IDX = TOP_WORD_NUM + 1
