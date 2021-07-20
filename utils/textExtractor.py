@@ -1,6 +1,8 @@
 import urllib.request
 import time
 import html2text
+from socket import timeout
+
 
 from bs4 import BeautifulSoup
 
@@ -40,7 +42,7 @@ def get_text_from_url(url, retries = 5):
         headers = {'User-Agent': user_agent, }
         request = urllib.request.Request(url, None, headers)
 
-        html = urllib.request.urlopen(request).read().decode('utf-8')
+        html = urllib.request.urlopen(request, timeout=10).read().decode('utf-8')
 
 
 
@@ -103,14 +105,16 @@ def get_all_text_from_url(url, retries = 5):
     if retries == 0:
         raise Exception("could not handle request")
     try:
-        user_agent = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.7) Gecko/2009021910 Firefox/3.0.7'
-        headers = {'User-Agent': user_agent, }
+        user_agent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 11_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        headers = {'User-Agent': user_agent}
         request = urllib.request.Request(url, None, headers)
 
         html = urllib.request.urlopen(request).read().decode('utf-8')
 
         h = html2text.HTML2Text()
         h.ignore_links = True
+        h.ignore_images = True
+
         allText = h.handle(html)
 
         return allText
@@ -120,7 +124,7 @@ def get_all_text_from_url(url, retries = 5):
                   .format(url, exc))
             time.sleep(1)
             retries = retries - 1
-            return get_text_from_url(url, retries)
+            return get_all_text_from_url(url, retries)
         else:
             raise
 
