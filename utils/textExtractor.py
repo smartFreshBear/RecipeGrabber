@@ -1,10 +1,7 @@
-import urllib.request
 import time
+import urllib.request
+
 import html2text
-from socket import timeout
-
-
-from bs4 import BeautifulSoup
 
 MAX_SIZE_FOR_TRAINING_SET = 40
 
@@ -44,20 +41,9 @@ def get_text_from_url(url, retries = 5):
 
         html = urllib.request.urlopen(request, timeout=10).read().decode('utf-8')
 
-
-
-        # soup = BeautifulSoup(html)
-
         h = html2text.HTML2Text()
         h.ignore_links = True
         allText = h.handle(html)
-
-        # kill all script and style elements
-        # for script in soup(["script", "style"]):
-        #  script.extract()    # rip it out
-
-        # get text
-        # paragraphs = soup.get_text().split('\n\n\n')
 
         paragraphs = allText.split('\n\n')
 
