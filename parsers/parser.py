@@ -35,6 +35,8 @@ def is_window_valid_instr(text_window):
 def find_last_index_if_ingred(line_num, lines_of_text):
     line = line_num
     text_window = get_paragraph_from_indexes(line, line + WINDOW_SIZE_INGRID, lines_of_text)
+    if not is_window_valid_ingred(text_window):
+        return line
     while is_window_valid_ingred(text_window):
         line += 1
         text_window = get_paragraph_from_indexes(line, line + WINDOW_SIZE_INGRID, lines_of_text)

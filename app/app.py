@@ -20,7 +20,7 @@ import main_flow
 from utils import textExtractor
 import gevent
 from geventwebsocket.handler import WebSocketHandler
-
+import re
 app = Flask(__name__)
 
 print(os.path.dirname(os.path.realpath(__file__)))
@@ -109,8 +109,24 @@ def find_recipe_in_url_window_algo_based():
 
     ingred_paragraph, instr_paragraph = extract(ingredients, instructions, url)
 
+    # TODO - use remove_unwanted_patterns - if we want to support english also
+    # ingred_paragraph = remove_unwanted_patterns(ingred_paragraph)
+    # instr_paragraph = remove_unwanted_patterns(instr_paragraph)
+
     return {'ingredients': ingred_paragraph,
             'instructions': instr_paragraph}
+
+
+
+def remove_unwanted_patterns(text):
+    # Regex for removing all urls and file path:
+    # First group is for matching file path
+    # After the boolean or '|' groups that match all URI
+    url_regex = r'([\w]+(\/.*?\.[\w:]+))|([\w+]+\:\/\/)?([\w\d-]+\.)*[\w-]+[\.\:]\w+([\/\?\=\&\#.]?[-\w\+\,\%\=\'\"\:\/]+)*\/?'
+    fixed_doc = []
+    for row in text:
+        fixed_doc.append(re.sub(url_regex, '',row))
+    return fixed_doc
 
 
 def extract(ingredients, instructions, url):
