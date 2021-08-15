@@ -1,5 +1,8 @@
 import time
 import urllib.request
+import urllib.parse
+from w3lib.url import safe_url_string
+
 
 import html2text
 
@@ -12,7 +15,6 @@ MAX_WORDS_FOR_LINE = 100
 MAX_WORDS_FOR_PARA = 120
 
 I = 4
-
 
 def calibrate(result_paragraph):
     fixed_paragrapes = []
@@ -30,70 +32,14 @@ def calibrate(result_paragraph):
     return fixed_paragrapes
 
 
-
-def get_text_from_url(url, retries = 5):
-    if retries == 0:
-        raise Exception("could not handle request")
-    try:
-        user_agent = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.7) Gecko/2009021910 Firefox/3.0.7'
-        headers = {'User-Agent': user_agent, }
-        request = urllib.request.Request(url, None, headers)
-
-        html = urllib.request.urlopen(request, timeout=10).read().decode('utf-8')
-
-        h = html2text.HTML2Text()
-        h.ignore_links = True
-        allText = h.handle(html)
-
-        paragraphs = allText.split('\n\n')
-
-
-        result_paragraph = []
-        next_para_to_add = ''
-        separator_tolerance = SEPERATOR_TOLORANCE
-        for text in paragraphs:
-
-            if len(text.split(' ')) > MAX_WORDS_FOR_PARA:
-                text = text.split(' ')
-                n = MAX_WORDS_FOR_PARA
-                chunked = [' '.join(text[i:i + n]) for i in range(0, len(text), n)]
-                result_paragraph.extend(chunked)
-                continue
-
-            lines = (line.strip() for line in text.splitlines())
-            # break multi-headlines into a line each
-            chunks = (phrase.strip() for line in lines for phrase in line.split("  "))
-            # drop blank lines
-            text_result = '\n'.join(chunk for chunk in chunks if chunk)
-            if text_result != '':
-                next_para_to_add += '\n' + text_result
-            else:
-                separator_tolerance = separator_tolerance - 1
-
-            if text_result == '' and separator_tolerance == 0:
-                insert_text(next_para_to_add, result_paragraph)
-                next_para_to_add = ''
-                separator_tolerance = SEPERATOR_TOLORANCE
-
-        return calibrate(result_paragraph)
-    except Exception as exc:
-        if retries > 0:
-            print("an exception occurred while trying to access url {} trying again \n more details: {}"
-                  .format(url, exc))
-            time.sleep(1)
-            retries = retries - 1
-            return get_text_from_url(url, retries)
-        else:
-            raise
-
-
 def get_all_text_from_url(url, retries = 5):
     if retries == 0:
         raise Exception("could not handle request")
     try:
+        url_utf_8 = safe_url_string(url)
         user_agent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 11_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
         headers = {'User-Agent': user_agent}
-        request = urllib.request.Request(url, None, headers)
+        request = urllib.request.Request(url_utf_8, None, headers)
 
         html = urllib.request.urlopen(request).read().decode('utf-8')
 
