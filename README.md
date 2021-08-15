@@ -23,7 +23,3 @@ https://github.com/smartFreshBear/RecipeGrabber.git. </br>
 3- read about pip and its relation to python. </br>
 4- go over all the .py files and use pip [u can use the pycharm terminal] to install all the missing dependencies]. </br>
 5- try to run the flask app[also read about flask!]. </br>
-
-
-TODO -  </br>
-[] create a requirements.txt for our python project </br>
