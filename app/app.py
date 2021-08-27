@@ -2,22 +2,20 @@
 import os
 import sys
 
-from flask import Flask
-from flask import request
-
-
 import django
 from django.conf import settings
 from django.template import Template, Context
+from flask import Flask
+from flask import request
+
 TEMPLATES = [{'BACKEND':  'django.template.backends.django.DjangoTemplates'}]
 settings.configure(TEMPLATES=TEMPLATES)
 django.setup()
 
 print(sys.path.append(os.getcwd()))
-import parsers.parser
 
 import main_flow
-from utils import textExtractor
+from algorithms import window_key_word_based_algo
 import gevent
 from geventwebsocket.handler import WebSocketHandler
 import re
@@ -69,103 +67,35 @@ def check_if_text_is_recipe():
     return ans
 
 
-@app.route('/find_recipe_in_url/', methods=['POST'])
-def find_recipe_in_url():
-    url = request.form['url']
-    instructions = request.form['instructions'].lower() == "true"
-    ingredients = request.form['ingredients'].lower() == "true"
-
-    array_of_paragraphs_from_website = textExtractor.get_text_from_url(url=url)
-
-    answer = ''
-
-    for paragraph in array_of_paragraphs_from_website:
-
-        is_ingri = ingredients and main_flow.main_flow.predict_ingri(paragraph)
-        is_instruc = instructions and main_flow.main_flow.predict_instru(paragraph)
-        is_recipe = float(1)
-        if is_ingri == is_recipe or is_instruc == is_recipe:
-            answer += paragraph
-
-    return answer
-
-
-@app.route('/bottom_line_recipe_for/', methods=['GET'])
+@app.route('/ma_tachles/', methods=['GET'])
 def bottom_line_recipe_for():
     url = request.args.get('url')
-    ingredients, instructions = extract(True, True, url)
+    ingredients, instructions = window_key_word_based_algo.extract(True, True, url)
 
     c = Context({"ingredients": '\n'.join(ingredients),
                  "instructions": '\n '.join(instructions)})
 
     return template.render(c)
 
-@app.route('/find_recipe_in_url_new/', methods=['POST'])
+@app.route('/find_recipe_in_url/', methods=['POST'])
 def find_recipe_in_url_window_algo_based():
     url = request.form['url']
 
     instructions = request.form['instructions'].lower() == "true"
     ingredients = request.form['ingredients'].lower() == "true"
 
-    ingred_paragraph, instr_paragraph = extract(ingredients, instructions, url)
-
-    # TODO - use remove_unwanted_patterns - if we want to support english also
-    # ingred_paragraph = remove_unwanted_patterns(ingred_paragraph)
-    # instr_paragraph = remove_unwanted_patterns(instr_paragraph)
+    ingred_paragraph, instr_paragraph = window_key_word_based_algo.extract(ingredients, instructions, url)
 
     return {'ingredients': ingred_paragraph,
             'instructions': instr_paragraph}
 
 
-
 def remove_unwanted_patterns(text):
-    # Regex for removing all urls and file path:
-    # First group is for matching file path
-    # After the boolean or '|' groups that match all URI
     url_regex = r'([\w]+(\/.*?\.[\w:]+))|([\w+]+\:\/\/)?([\w\d-]+\.)*[\w-]+[\.\:]\w+([\/\?\=\&\#.]?[-\w\+\,\%\=\'\"\:\/]+)*\/?'
     fixed_doc = []
     for row in text:
-        fixed_doc.append(re.sub(url_regex, '',row))
+        fixed_doc.append(re.sub(url_regex, '', row))
     return fixed_doc
-
-
-def extract(ingredients, instructions, url):
-    ingred_paragraph = {}
-    instr_paragraph = {}
-    all_text = textExtractor.get_all_text_from_url(url=url)
-    lines_of_text = list(filter(None, all_text.split('\n')))
-    if ingredients:
-        all_relevant_ingred_indies = parsers.parser.find_line_with_key_word(lines_of_text, True)
-        max_num_of_lines_ingred = 0
-
-        # find ingred paragraph with max number of lines
-        for i in range(0, len(all_relevant_ingred_indies)):
-            #TODO gotta know if first window was sucessfull
-            first_line = all_relevant_ingred_indies[i]
-            last_line = parsers.parser.find_last_index_if_ingred(first_line, lines_of_text)
-            new_size_of_text = last_line - first_line
-            if new_size_of_text > max_num_of_lines_ingred:
-                first_line_ingred = first_line
-                last_line_ingred = last_line
-                max_num_of_lines_ingred = new_size_of_text
-                ingred_paragraph = parsers.parser.get_paragraph_from_indexes(first_line_ingred, last_line_ingred,
-                                                                             lines_of_text)
-    if instructions:
-        # find instr paragraph with max number of lines
-        all_relevant_instr_indies = parsers.parser.find_line_with_key_word(lines_of_text, False)
-        max_num_of_lines_instr = 0
-
-        for i in range(0, len(all_relevant_instr_indies)):
-            first_line = all_relevant_instr_indies[i]
-            last_line = parsers.parser.find_last_index_if_instruc(first_line, lines_of_text)
-            new_size_of_text = last_line - first_line
-            if new_size_of_text > max_num_of_lines_instr:
-                first_line_instr = first_line
-                last_line_instr = last_line
-                max_num_of_lines_instr = new_size_of_text
-                instr_paragraph = parsers.parser.get_paragraph_from_indexes(first_line_instr, last_line_instr,
-                                                                            lines_of_text)
-    return ingred_paragraph, instr_paragraph
 
 
 if __name__ == '__main__':
