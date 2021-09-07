@@ -1,24 +1,22 @@
 
 import os
-import sys
 
-import django
-from django.conf import settings
-from django.template import Template, Context
+# import django
+# from django.conf import settings
 from flask import Flask
 from flask import request
 
-TEMPLATES = [{'BACKEND':  'django.template.backends.django.DjangoTemplates'}]
-settings.configure(TEMPLATES=TEMPLATES)
-django.setup()
-
-print(sys.path.append(os.getcwd()))
+# TEMPLATES = [{'BACKEND':  'django.template.backends.django.DjangoTemplates'}]
+# settings.configure(TEMPLATES=TEMPLATES)
+# django.setup()
 
 import main_flow
 from algorithms import window_key_word_based_algo
+from exreamlystupidui import html_renderer
+from apputils import text_prettifer
 import gevent
 from geventwebsocket.handler import WebSocketHandler
-import re
+# import re
 app = Flask(__name__)
 
 print(os.path.dirname(os.path.realpath(__file__)))
@@ -30,23 +28,6 @@ main_flow.main_flow.main()
 AMOUNT_OF_LINES = 7
 
 print("server is up and running :)")
-
-templateHtml = """
-<!DOCTYPE html>
-<html lang="en">
-   <h1 style="color: #5e9ca0; text-align: right;">:המתכון</h1>
-   <h2 style="color: #2e6c80; text-align: right;">:מצרכים</h2>
-   <ol style="list-style-type: hebrew; direction: rtl;">
-      <p style="text-align: right;">{{ingredients}}</p>
-   </ol>
-   <h2 style="color: #2e6c80; text-align: right;">:הוראות הכנה</h2>
-   <p style="text-align: right;">{{instructions}}</p>
-   <p><strong>&nbsp;</strong></p>
-</html>
-"""
-
-template = Template(templateHtml)
-
 
 @app.route('/isServerUp')
 def is_server_up():
@@ -72,10 +53,12 @@ def bottom_line_recipe_for():
     url = request.args.get('url')
     ingredients, instructions = window_key_word_based_algo.extract(True, True, url)
 
-    c = Context({"ingredients": '\n'.join(ingredients),
-                 "instructions": '\n '.join(instructions)})
+    return html_renderer.render_given_json(create_json_response(ingredients, instructions))
 
-    return template.render(c)
+@app.route('/', methods=['GET'])
+def home_page():
+    return html_renderer.render_home_page()
+
 
 @app.route('/find_recipe_in_url/', methods=['POST'])
 def find_recipe_in_url_window_algo_based():
@@ -86,16 +69,24 @@ def find_recipe_in_url_window_algo_based():
 
     ingred_paragraph, instr_paragraph = window_key_word_based_algo.extract(ingredients, instructions, url)
 
-    return {'ingredients': ingred_paragraph,
-            'instructions': instr_paragraph}
 
 
-def remove_unwanted_patterns(text):
-    url_regex = r'([\w]+(\/.*?\.[\w:]+))|([\w+]+\:\/\/)?([\w\d-]+\.)*[\w-]+[\.\:]\w+([\/\?\=\&\#.]?[-\w\+\,\%\=\'\"\:\/]+)*\/?'
-    fixed_doc = []
-    for row in text:
-        fixed_doc.append(re.sub(url_regex, '', row))
-    return fixed_doc
+    return create_json_response(
+        text_prettifer.process(ingred_paragraph),
+        text_prettifer.process(instr_paragraph))
+
+
+def create_json_response(ingred_paragraph, instr_paragraph):
+    return {'ingredients': text_prettifer.process(ingred_paragraph),
+            'instructions': text_prettifer.process(instr_paragraph)}
+
+
+# def remove_unwanted_patterns(text):
+#     url_regex = r'([\w]+(\/.*?\.[\w:]+))|([\w+]+\:\/\/)?([\w\d-]+\.)*[\w-]+[\.\:]\w+([\/\?\=\&\#.]?[-\w\+\,\%\=\'\"\:\/]+)*\/?'
+#     fixed_doc = []
+#     for row in text:
+#         fixed_doc.append(re.sub(url_regex, '', row))
+#     return fixed_doc
 
 
 if __name__ == '__main__':
