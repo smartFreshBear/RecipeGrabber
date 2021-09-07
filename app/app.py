@@ -1,14 +1,10 @@
 
 import os
+import sys
+print(sys.path.append(os.getcwd()))
 
-# import django
-# from django.conf import settings
 from flask import Flask
 from flask import request
-
-# TEMPLATES = [{'BACKEND':  'django.template.backends.django.DjangoTemplates'}]
-# settings.configure(TEMPLATES=TEMPLATES)
-# django.setup()
 
 import main_flow
 from algorithms import window_key_word_based_algo

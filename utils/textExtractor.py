@@ -5,13 +5,15 @@ from w3lib.url import safe_url_string
 
 import html2text
 
+USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 11_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+
+
 def get_all_text_from_url(url, retries = 5):
     if retries == 0:
         raise Exception("could not handle request")
     try:
         url_utf_8 = safe_url_string(url)
-        user_agent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 11_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-        headers = {'User-Agent': user_agent}
+        headers = {'User-Agent': USER_AGENT}
         request = urllib.request.Request(url_utf_8, None, headers)
 
         response = urllib.request.urlopen(request)
