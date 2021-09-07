@@ -15,6 +15,15 @@ class UnwantedPatternRemover(TextPrettifier):
         return fixed_doc
 
 
+class RemoveHeadlines(TextPrettifier):
+    def process(text):
+        url_regex = ''
+        fixed_doc = []
+        for row in text:
+            fixed_doc.append(re.sub(url_regex, '', row))
+        return fixed_doc
+
+
 
 def process(txt):
     all_prettifies = [UnwantedPatternRemover]

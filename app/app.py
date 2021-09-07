@@ -16,7 +16,7 @@ from exreamlystupidui import html_renderer
 from apputils import text_prettifer
 import gevent
 from geventwebsocket.handler import WebSocketHandler
-# import re
+
 app = Flask(__name__)
 
 print(os.path.dirname(os.path.realpath(__file__)))
@@ -79,14 +79,6 @@ def find_recipe_in_url_window_algo_based():
 def create_json_response(ingred_paragraph, instr_paragraph):
     return {'ingredients': text_prettifer.process(ingred_paragraph),
             'instructions': text_prettifer.process(instr_paragraph)}
-
-
-# def remove_unwanted_patterns(text):
-#     url_regex = r'([\w]+(\/.*?\.[\w:]+))|([\w+]+\:\/\/)?([\w\d-]+\.)*[\w-]+[\.\:]\w+([\/\?\=\&\#.]?[-\w\+\,\%\=\'\"\:\/]+)*\/?'
-#     fixed_doc = []
-#     for row in text:
-#         fixed_doc.append(re.sub(url_regex, '', row))
-#     return fixed_doc
 
 
 if __name__ == '__main__':

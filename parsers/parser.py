@@ -1,4 +1,5 @@
 import main_flow.main_flow
+from daos.key_words import key_words as keys
 
 ACCEPTANCE_BENCHMARK_INGRID = 0.07
 ACCEPTANCE_BENCHMARK_INSTRU = 0.0742
@@ -6,20 +7,6 @@ ACCEPTANCE_BENCHMARK_INSTRU = 0.0742
 
 WINDOW_SIZE_INGRID = 6
 WINDOW_SIZE_INSTRUCT = 8
-
-def get_key_words_ingred():
-    with open('parsers/resource/key_words_ingri.txt', encoding="utf8") as f:
-        return [line.replace('\n', "") for line in f.readlines()]
-
-
-def get_key_words_instr():
-    with open('parsers/resource/key_words_instruc.txt', encoding="utf8") as f:
-        return [line.replace('\n', "") for line in f.readlines()]
-
-
-key_words_ingred = get_key_words_ingred()
-key_words_instr = get_key_words_instr()
-
 
 def get_paragraph_from_indexes(first_line, last_line, lines_of_text):
     return lines_of_text[first_line:last_line]
@@ -55,9 +42,10 @@ def find_last_index_if_instruc(line_num, lines_of_text):
 def find_line_with_key_word(lines_of_text, ingredients):
     all_indices = []
     if ingredients:
-        key_words = key_words_ingred
+        key_words = keys.get_ingredients_key_words()
     else:
-        key_words = key_words_instr
+        key_words = keys.get_instructions_key_words()
+
     for i in range(0, len(lines_of_text)):
         line = lines_of_text[i]
         line_contains_key_words = any(key in line for key in key_words)
