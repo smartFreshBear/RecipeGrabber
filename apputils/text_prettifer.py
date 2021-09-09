@@ -14,21 +14,35 @@ class UnwantedPatternRemover(TextPrettifier):
             fixed_doc.append(re.sub(url_regex, '', row))
         return fixed_doc
 
-
-#play and check
-class RemoveHeadlines(TextPrettifier):
+class RemoveHeadlinesTop(TextPrettifier):
     def process(text):
         if len(text) > 0:
-            big_regex = re.compile('|'.join(map(re.escape, key_words.get_ingredients_key_words())))
+            big_regex = get_regex_with_all_headlines()
             result = [big_regex.sub("", text[0])]
-            result.append(text[1 :])
+            result.extend(text[1 :])
             return result
 
         return text
 
+class RemoveHeadlinesBottom(TextPrettifier):
+    def process(text):
+        if len(text) > 0:
+            big_regex = get_regex_with_all_headlines()
+            result = [big_regex.sub("", text.pop())]
+            text.extend(result)
+            return text
+
+        return text
+
+def get_regex_with_all_headlines():
+    all_key_words = key_words.get_ingredients_key_words()
+    all_key_words.extend(key_words.get_instructions_key_words())
+    big_regex = re.compile('|'.join(map(re.escape, all_key_words)))
+    return big_regex
+
 
 def process(txt):
-    all_prettifies = [UnwantedPatternRemover, RemoveHeadlines]
+    all_prettifies = [UnwantedPatternRemover, RemoveHeadlinesTop, RemoveHeadlinesBottom]
 
     processed_text = txt
 
