@@ -2,10 +2,10 @@ import parsers.parser
 from utils import textExtractor
 
 
-def extract(ingredients, instructions, url):
+def extract(ingredients, instructions, all_text):
     ingred_paragraph = {}
     instr_paragraph = {}
-    all_text = textExtractor.get_all_text_from_url(url=url)
+    # all_text = textExtractor.get_all_text_from_url(url=url)
     lines_of_text = list(filter(None, all_text.split('\n')))
     if ingredients:
         all_relevant_ingred_indies = parsers.parser.find_line_with_key_word(lines_of_text, True)
