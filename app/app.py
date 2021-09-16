@@ -1,5 +1,6 @@
 
 import os
+import sys
 
 from flask import Flask
 from flask import request
@@ -15,6 +16,7 @@ from geventwebsocket.handler import WebSocketHandler
 from utils import textExtractor
 
 app = Flask(__name__)
+print(sys.path.append(os.getcwd()))
 
 print(os.path.dirname(os.path.realpath(__file__)))
 
