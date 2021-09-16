@@ -41,11 +41,7 @@ def check_if_text_is_recipe():
     all_text = request.form['text']
 
     ingredients, instructions = window_key_word_based_algo.extract(True, True, all_text)
-    return create_json_response(
-        text_prettifer.process(ingredients),
-        text_prettifer.process(instructions))
-
-
+    return create_json_response(ingredients, instructions)
 
 
 @app.route('/ma_tachles/', methods=['GET'])
@@ -56,6 +52,7 @@ def bottom_line_recipe_for():
     ingredients, instructions = window_key_word_based_algo.extract(True, True, all_text)
 
     return html_renderer.render_given_json(create_json_response(ingredients, instructions))
+
 
 @app.route('/', methods=['GET'])
 def home_page():
@@ -72,14 +69,12 @@ def find_recipe_in_url_window_algo_based():
     all_text = textExtractor.get_all_text_from_url(url=url)
     ingred_paragraph, instr_paragraph = window_key_word_based_algo.extract(ingredients, instructions, all_text)
 
-    return create_json_response(
-        text_prettifer.process(ingred_paragraph),
-        text_prettifer.process(instr_paragraph))
+    return create_json_response(ingred_paragraph, instr_paragraph)
 
 
 def create_json_response(ingred_paragraph, instr_paragraph):
-    return {'ingredients': text_prettifer.process(ingred_paragraph),
-            'instructions': text_prettifer.process(instr_paragraph)}
+    return text_prettifer.process({'ingredients': ingred_paragraph,
+                                   'instructions': instr_paragraph})
 
 
 if __name__ == '__main__':
