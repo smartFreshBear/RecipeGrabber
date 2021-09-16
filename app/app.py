@@ -15,16 +15,15 @@ from geventwebsocket.handler import WebSocketHandler
 
 from utils import textExtractor
 
-app = Flask(__name__)
 print(sys.path.append(os.getcwd()))
 
+app = Flask(__name__)
 print(os.path.dirname(os.path.realpath(__file__)))
+
 
 application = app
 
 main_flow.main_flow.main()
-
-AMOUNT_OF_LINES = 7
 
 print("server is up and running :)")
 
