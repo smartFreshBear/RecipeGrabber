@@ -1,11 +1,9 @@
 import parsers.parser
-from utils import textExtractor
 
 
-def extract(ingredients, instructions, url):
+def extract(ingredients, instructions, all_text):
     ingred_paragraph = {}
     instr_paragraph = {}
-    all_text = textExtractor.get_all_text_from_url(url=url)
     lines_of_text = list(filter(None, all_text.split('\n')))
     if ingredients:
         all_relevant_ingred_indies = get_lines_of_text(lines_of_text)
@@ -14,7 +12,6 @@ def extract(ingredients, instructions, url):
 
         # find ingred paragraph with max number of lines
         for i in range(0, len(all_relevant_ingred_indies)):
-            #TODO gotta know if first window was sucessfull
             first_line = all_relevant_ingred_indies[i]
             last_line = parsers.parser.find_last_index_if_ingred(first_line, lines_of_text)
             new_size_of_text = last_line - first_line
