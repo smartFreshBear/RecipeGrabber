@@ -5,14 +5,13 @@ import sys
 from flask import Flask
 from flask import request
 
-from apputils import text_prettifer
 import gevent
 from geventwebsocket.handler import WebSocketHandler
 
-from utils import textExtractor
-
 print(sys.path.append(os.getcwd()))
 
+from utils import textExtractor
+from apputils import text_prettifer
 import main_flow
 from algorithms import window_key_word_based_algo
 from exreamlystupidui import html_renderer
