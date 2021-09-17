@@ -5,9 +5,6 @@ import sys
 from flask import Flask
 from flask import request
 
-
-from algorithms import window_key_word_based_algo
-from exreamlystupidui import html_renderer
 from apputils import text_prettifer
 import gevent
 from geventwebsocket.handler import WebSocketHandler
@@ -15,7 +12,10 @@ from geventwebsocket.handler import WebSocketHandler
 from utils import textExtractor
 
 print(sys.path.append(os.getcwd()))
+
 import main_flow
+from algorithms import window_key_word_based_algo
+from exreamlystupidui import html_renderer
 
 app = Flask(__name__)
 print(os.path.dirname(os.path.realpath(__file__)))
