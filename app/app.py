@@ -12,7 +12,7 @@ from exreamlystupidui import html_renderer
 from apputils import text_prettifer
 import gevent
 from geventwebsocket.handler import WebSocketHandler
-# import re
+
 app = Flask(__name__)
 
 print(os.path.dirname(os.path.realpath(__file__)))

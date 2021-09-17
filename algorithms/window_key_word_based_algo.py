@@ -8,7 +8,8 @@ def extract(ingredients, instructions, url):
     all_text = textExtractor.get_all_text_from_url(url=url)
     lines_of_text = list(filter(None, all_text.split('\n')))
     if ingredients:
-        all_relevant_ingred_indies = parsers.parser.find_line_with_key_word(lines_of_text, True)
+        all_relevant_ingred_indies = get_lines_of_text(lines_of_text)
+
         max_num_of_lines_ingred = 0
 
         # find ingred paragraph with max number of lines
@@ -39,3 +40,10 @@ def extract(ingredients, instructions, url):
                 instr_paragraph = parsers.parser.get_paragraph_from_indexes(first_line_instr, last_line_instr,
                                                                             lines_of_text)
     return ingred_paragraph, instr_paragraph
+
+
+def get_lines_of_text(lines_of_text):
+    all_relevant_indies = parsers.parser.find_line_with_key_word(lines_of_text, True)
+    all_relevant_indies = all_relevant_indies if all_relevant_indies > 0 \
+        else range(len(lines_of_text) - 1)
+    return all_relevant_indies
