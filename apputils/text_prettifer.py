@@ -23,6 +23,7 @@ class UnwantedPatternRemover(TextPrettifier):
             fixed_doc.append(re.sub(url_regex, '', row))
         return fixed_doc
 
+
 class RemoveHeadlinesTop(TextPrettifier):
     supporting_types = [INGREDIENTS, INSTRUCTIONS]
     def process(text, type):
