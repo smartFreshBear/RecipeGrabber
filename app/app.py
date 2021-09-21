@@ -78,5 +78,5 @@ def create_json_response(ingred_paragraph, instr_paragraph):
 
 
 if __name__ == '__main__':
-    server = gevent.pywsgi.WSGIServer( (u'0.0.0.0', 5000), app, handler_class=WebSocketHandler )
+    server = gevent.pywsgi.WSGIServer( (u'0.0.0.0', 80), app, handler_class=WebSocketHandler )
     server.serve_forever()
