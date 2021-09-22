@@ -4,6 +4,9 @@ import sys
 
 from flask import Flask
 from flask import request
+from flask import redirect
+from flask import url_for
+
 
 import gevent
 from geventwebsocket.handler import WebSocketHandler
@@ -24,7 +27,15 @@ application = app
 
 main_flow.main_flow.main()
 
+STATIC_URL = "/static/"
+
+
 print("server is up and running :)")
+
+
+@app.route('/favicon.ico')
+def favicon():
+    return redirect(url_for('static', filename='favicon/favicon.ico'))
 
 @app.route('/isServerUp')
 def is_server_up():
