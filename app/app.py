@@ -55,16 +55,6 @@ def check_if_text_is_recipe():
     return create_json_response(ingredients, instructions)
 
 
-@app.route('/ma_tachles/', methods=['GET'])
-def bottom_line_recipe_for():
-    url = request.args.get('url')
-    all_text = textExtractor.get_all_text_from_url(url=url)
-
-    ingredients, instructions = window_key_word_based_algo.extract(True, True, all_text)
-
-    return html_renderer.render_given_json(create_json_response(ingredients, instructions))
-
-
 @app.route('/', methods=['GET'])
 def home_page():
     return html_renderer.render_home_page()
@@ -77,15 +67,18 @@ def find_recipe_in_url_window_algo_based():
     instructions = request.form['instructions'].lower() == "true"
     ingredients = request.form['ingredients'].lower() == "true"
 
-    all_text = textExtractor.get_all_text_from_url(url=url)
+    all_text, title = textExtractor.get_all_text_from_url(url=url)
     ingred_paragraph, instr_paragraph = window_key_word_based_algo.extract(ingredients, instructions, all_text)
 
-    return create_json_response(ingred_paragraph, instr_paragraph)
+    return create_json_response(ingred_paragraph, instr_paragraph, title, url)
 
 
-def create_json_response(ingred_paragraph, instr_paragraph):
-    return text_prettifer.process({'ingredients': ingred_paragraph,
+def create_json_response(ingred_paragraph, instr_paragraph, title, url):
+    json_response =  text_prettifer.process({'ingredients': ingred_paragraph,
                                    'instructions': instr_paragraph})
+    json_response['title'] = title
+    json_response['url'] = url
+    return json_response
 
 
 if __name__ == '__main__':
