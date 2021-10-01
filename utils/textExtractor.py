@@ -1,6 +1,7 @@
 import time
 import urllib.request
 import urllib.parse
+from bs4 import BeautifulSoup
 from w3lib.url import safe_url_string
 
 import html2text
@@ -9,9 +10,9 @@ USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 11_4) AppleWebKit/537.36 (K
 
 
 def findTitle(html):
-    str_html = str(html)
-    title = str_html.split('<title>')[1].split('</title>')[0] if 'title' in str_html else 'not title was found'
-    return title
+    soup = BeautifulSoup(html, 'html.parser')
+    title = soup.find('title')
+    return title.string
 
 def get_all_text_from_url(url, retries = 5):
     if retries == 0:
