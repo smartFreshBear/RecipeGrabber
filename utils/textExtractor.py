@@ -8,6 +8,11 @@ import html2text
 USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 11_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
 
 
+def findTitle(html):
+    str_html = str(html)
+    title = str_html.split('<title>')[1].split('</title>')[0] if 'title' in str_html else 'not title was found'
+    return title
+
 def get_all_text_from_url(url, retries = 5):
     if retries == 0:
         raise Exception("could not handle request")
@@ -21,13 +26,15 @@ def get_all_text_from_url(url, retries = 5):
         encoding = 'utf-8' if given_encoding is None else given_encoding
         html = response.read().decode(encoding)
 
+
+
         h = html2text.HTML2Text()
         h.ignore_links = True
         h.ignore_images = True
-
+        title = findTitle(html)
         allText = h.handle(html)
 
-        return allText
+        return allText, title
     except Exception as exc:
         if retries > 0:
             print("an exception occurred while trying to access url {} trying again \n more details: {}"
