@@ -88,6 +88,4 @@ def find_line_with_key_word(lines_of_text, ingredients):
         if line_contains_key_words:
             all_indices.append(i)
 
-    if len(list(all_indices)) == 0:
-        return [0]
     return list(all_indices)
