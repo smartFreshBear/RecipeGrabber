@@ -38,7 +38,14 @@ def is_window_valid_instr(text_window):
 
 def is_window_valid(text_window, type):
     configs_for_type = FROM_TYPE_TO_DEFS[type]
-    return configs_for_type['ACCEPTANCE_BENCHMARK'] < configs_for_type['CLASSIFIER']('\n'.join(text_window))
+    score_of_paragraph = get_score_for_text_window_of_type(text_window, type)
+    return configs_for_type['ACCEPTANCE_BENCHMARK'] < score_of_paragraph
+
+
+def get_score_for_text_window_of_type(text_window, type):
+    configs_for_type = FROM_TYPE_TO_DEFS[type]
+    score_of_paragraph = configs_for_type['CLASSIFIER']('\n'.join(text_window))
+    return score_of_paragraph
 
 
 def find_last_index_if_ingred(line_num, lines_of_text):
