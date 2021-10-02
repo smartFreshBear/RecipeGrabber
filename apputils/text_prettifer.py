@@ -74,7 +74,7 @@ def get_regex_for_type(type):
     return big_regex
 
 
-all_prettifies = [UnwantedPatternRemover, RemoveHeadlinesTop, RemoveHeadlinesBottom, RemoveInstructions, RemoveEmptyLines]
+all_prettifies = [UnwantedPatternRemover, RemoveInstructions ,RemoveHeadlinesTop, RemoveHeadlinesBottom, RemoveEmptyLines]
 
 def process(json_response):
 
