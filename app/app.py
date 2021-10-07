@@ -11,6 +11,7 @@ from flask import url_for
 import gevent
 from geventwebsocket.handler import WebSocketHandler
 
+
 print(sys.path.append(os.getcwd()))
 
 from utils import textExtractor
@@ -18,12 +19,15 @@ from apputils import text_prettifer
 import main_flow
 from algorithms import window_key_word_based_algo
 from exreamlystupidui import html_renderer
+from daos.brokenlinks import broken_link_manager
 
 app = Flask(__name__)
 print(os.path.dirname(os.path.realpath(__file__)))
 
 
 application = app
+
+broken_link_dao = broken_link_manager.BrokenLinkClient(application)
 
 main_flow.main_flow.main()
 
@@ -55,9 +59,18 @@ def check_if_text_is_recipe():
     return create_json_response(ingredients, instructions)
 
 
-@app.route('/', methods=['GET'])
-def home_page():
-    return html_renderer.render_home_page()
+@app.route('/add_url_to_investigation_list/', methods=['POST'])
+def add_url_to_investigation_list():
+    url = request.form['url']
+    broken_link_dao.presist_broken_link(url, False)
+    return { 'status': 'OK'}
+
+
+
+@app.route('/get_all_broken_links', methods=['GET'])
+def get_all_broken_links():
+    what_is_it = broken_link_dao.get_all_broken_links()
+    return what_is_it
 
 
 @app.route('/find_recipe_in_url/', methods=['POST'])
