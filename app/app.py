@@ -1,16 +1,11 @@
-
+import logging
 import os
 import sys
 
+import gevent
 from flask import Flask
 from flask import request
-from flask import redirect
-from flask import url_for
-
-
-import gevent
 from geventwebsocket.handler import WebSocketHandler
-
 
 print(sys.path.append(os.getcwd()))
 
@@ -18,7 +13,6 @@ from utils import textExtractor
 from apputils import text_prettifer
 import main_flow
 from algorithms import window_key_word_based_algo
-from exreamlystupidui import html_renderer
 from daos.brokenlinks import broken_link_manager
 
 app = Flask(__name__)
@@ -34,16 +28,7 @@ main_flow.main_flow.main()
 STATIC_URL = "/static/"
 
 
-print("server is up and running :)")
-
-
-@app.route('/favicon.ico')
-def favicon():
-    return redirect(url_for('static', filename='favicon/favicon.ico'))
-
-@app.route('/isServerUp')
-def is_server_up():
-    return "Yes, Server is up"
+logging.info("server is up and running :)")
 
 
 @app.route('/train')
@@ -64,7 +49,6 @@ def add_url_to_investigation_list():
     url = request.form['url']
     broken_link_dao.presist_broken_link(url, False)
     return { 'status': 'OK'}
-
 
 
 @app.route('/get_all_broken_links', methods=['GET'])

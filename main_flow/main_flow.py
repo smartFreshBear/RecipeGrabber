@@ -1,3 +1,4 @@
+import logging
 from json import JSONDecodeError
 
 import data_loader
@@ -26,8 +27,7 @@ INSTRUCTIONS_TOP_WORDS = 'inst_top_words.pkl'
 INGREDIENTS_PARAMS = 'ing_params.pkl'
 INGREDIENTS_TOP_WORDS = 'ing_top_words.pkl'
 
-
-HEBREW_NLP_END_POINT = 'https://hebrew-nlp.co.il/service/Morphology/Normalize'
+HEBREW_NLP_END_POINT = 'https://hebrew-nlp.co.il/service/morphology/normalize'
 
 requests_cache.install_cache(cache_name='hebrew_roots', backend='sqlite', expire_after=60 * 60 * 24 * 100)
 
@@ -54,7 +54,6 @@ def loadCache():
 
 
 def periodically_save_cache():
-
     while True:
         # Wait for new data to accumulate
         time.sleep(CYCLE_TIME_TO_SAVE_CACHE)
@@ -62,7 +61,6 @@ def periodically_save_cache():
         # Save to disk
         with open('data.pkl', 'wb') as handle:
             pickle.dump(from_word_to_steam_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
-
 
 
 TOP_WORD_NUM = 1500
@@ -79,6 +77,7 @@ PSIKIM_MARKS_VALUES_IDX = DASH_MARKS_VALUES_IDX + 1
 DIGITS_TO_WORDS_RATIO_IDX = PSIKIM_MARKS_VALUES_IDX + 1
 
 FROM_NAME_TO_LABELS = {}
+
 
 def steamimfy(table):
     steamedTable = copy.deepcopy(table)
@@ -104,8 +103,9 @@ def steam_list_of_words_with_cache(row):
                 'text': ' ## '.join(attention_seekers)
             }
 
-            response = requests.post(HEBREW_NLP_END_POINT, json=request).json()
-            flatten_lst_of_words = [item for sublist in response for item in sublist]
+            response = requests.post(HEBREW_NLP_END_POINT, json=request)
+            json_response = response.json()
+            flatten_lst_of_words = [item for sublist in json_response for item in sublist]
             answer_from_api = ''.join(flatten_lst_of_words).split('##')
             for i in range(len(attention_seekers)):
                 from_word_to_steam_cache[attention_seekers[i]] = answer_from_api[i]
@@ -113,7 +113,7 @@ def steam_list_of_words_with_cache(row):
         row[0] = answer_from_api.extend(cached_words)
         row[0] = answer_from_api
     except JSONDecodeError as jsonExc:
-        print("had a problem parsing this row {} \n more info: {}".format(row, jsonExc))
+        logging.info("had a problem parsing this row {} \n more info: {}".format(row, jsonExc))
 
 
 def get_already_cached_words(attention_seekers, words):
@@ -146,6 +146,7 @@ def top_words(tables, top_num):
     return top_instru_dict, top_ingri_dict
 
 
+# ;)
 def sort_dic_by_size(x):
     return {k: v for k, v in sorted(x.items(), key=lambda item: item[1], reverse=True)}
 
@@ -190,10 +191,13 @@ def enrich_count_char_for_index(vectorized_instr, table, index, char):
         vectorized_instr[i][index] = (row[0].count(char) / int(row[3]))
 
 
+# TODO add test to this one!
+
 def enrich_ratio_word_to_numbers(vectorized_instr, table):
     for i in range(len(table)):
         row = table[i]
         amount_of_words = int(row[3])
+        # numbers = [str(s) for s in row[0].split() if s.isnumeric()] vs...
         numbers = [str(s) for s in row[0].split() if s.isdigit()]
         vectorized_instr[i][DIGITS_TO_WORDS_RATIO_IDX] = count_amount_of_n_digits(numbers, 1) / amount_of_words
         vectorized_instr[i][DIGITS_TO_WORDS_RATIO_IDX + 1] = count_amount_of_n_digits(numbers, 2) / amount_of_words
@@ -240,8 +244,6 @@ def calculate_amount_of_words(table):
 
 
 def enrich_tables_vector(table, vectorized_ingrid, vectorized_instr):
-    # TODO： COUNT PSIKIM
-
     calculate_amount_of_words(table)
     enrich_count_char_for_index(vectorized_ingrid, table, NEW_LINE_TO_WORD_RATIO_IDX, '\n')
     enrich_count_char_for_index(vectorized_ingrid, table, EXCLAMATION_MARKS_VALUES_IDX, '!')
@@ -267,16 +269,14 @@ def enrich_tables_vector(table, vectorized_ingrid, vectorized_instr):
 
 
 def train(num_of_neurons_in_hidden_layer, learning_rate, num_iterations, name_group, test_error_tolerance):
-
     layers_dims = [TOP_WORD_NUM + EXTRA_FEATURES_NUM, num_of_neurons_in_hidden_layer, 1]
     test_error = 10
     parameters = {}
 
     while test_error_tolerance < test_error:
-
         training_ex, training_labels, validation_ex, validation_labels, test_ex, test_labels = \
-        training_test_cv_divider.divided_training_test(FROM_NAME_TO_LABELS[name_group][0],
-                                                               FROM_NAME_TO_LABELS[name_group][1], 0.8)
+            training_test_cv_divider.divided_training_test(FROM_NAME_TO_LABELS[name_group][0],
+                                                           FROM_NAME_TO_LABELS[name_group][1], 0.8)
 
         parameters = utils.L_layer_network.L_layer_model(training_ex.T,
                                                          training_labels.T,
@@ -292,9 +292,9 @@ def train(num_of_neurons_in_hidden_layer, learning_rate, num_iterations, name_gr
         validation_error = error_percent(validation_ex, validation_labels, parameters)
         test_error = error_percent(test_ex, test_labels, parameters)
 
-        print("training {0} error: {1} ".format(name_group, str(train_error)))
-        print("validation {0} error : {1} ".format(name_group, str(validation_error)))
-        print("test {0} error : {1} ".format(name_group, str(test_error)))
+        logging.info("training {0} error: {1} ".format(name_group, str(train_error)))
+        logging.info("validation {0} error : {1} ".format(name_group, str(validation_error)))
+        logging.info("test {0} error : {1} ".format(name_group, str(test_error)))
 
     return parameters
 
@@ -325,6 +325,7 @@ def predict_instru(text):
 
     return predicted
 
+
 def predict_ingri_probes(text):
     vectorized_instr, instruction_lbls, vectorized_ingrid, ingrid_lbls = example_to_vector(text)
 
@@ -348,9 +349,10 @@ def main():
 
     if not loadCache():
         load_data()
-        parameters_instr = train(4, learning_rate=0.5, num_iterations=170, name_group=INSTRUCTIONS_PARAMS,test_error_tolerance=0.037)
-        parameters_ingred = train(4, learning_rate=0.5, num_iterations=175, name_group=INGREDIENTS_PARAMS, test_error_tolerance=0.01)
-
+        train(4, learning_rate=0.5, num_iterations=170, name_group=INSTRUCTIONS_PARAMS,
+              test_error_tolerance=0.037)
+        train(4, learning_rate=0.5, num_iterations=175, name_group=INGREDIENTS_PARAMS,
+              test_error_tolerance=0.01)
 
     caching_thread = threading.Thread(target=periodically_save_cache)
     caching_thread.start()

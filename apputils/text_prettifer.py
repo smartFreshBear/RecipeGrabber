@@ -47,8 +47,10 @@ class RemoveInstructions(TextPrettifier):
             last_suspicious_index = all_suspicious_incites.pop()
             return text[0:last_suspicious_index]
 
+
 class RemoveHeadlinesBottom(TextPrettifier):
     supporting_types = [INGREDIENTS, INSTRUCTIONS]
+
     def process(text, type):
         if len(text) > 0:
             big_regex = get_regex_for_type(get_opposite[type])

@@ -1,13 +1,10 @@
+import logging
 
-import time
-import numpy as np
-import h5py
 import matplotlib.pyplot as plt
-import scipy
-from PIL import Image
-from scipy import ndimage
+import numpy as np
 
 import utils.core_methods as core
+
 
 def two_layer_model(X, Y, layers_dims, learning_rate=0.0075, num_iterations=3000, print_cost=False):
     """
@@ -30,9 +27,7 @@ def two_layer_model(X, Y, layers_dims, learning_rate=0.0075, num_iterations=3000
     (n_x, n_h, n_y) = layers_dims
 
     # Initialize parameters dictionary, by calling one of the functions you'd previously implemented
-    ### START CODE HERE ### (≈ 1 line of code)
     parameters = core.initialize_parameters(n_x, n_h, n_y)
-    ### END CODE HERE ###
 
     # Get W1, b1, W2 and b2 from the dictionary parameters.
     W1 = parameters["W1"]
@@ -45,24 +40,19 @@ def two_layer_model(X, Y, layers_dims, learning_rate=0.0075, num_iterations=3000
     for i in range(0, num_iterations):
 
         # Forward propagation: LINEAR -> RELU -> LINEAR -> SIGMOID. Inputs: "X, W1, b1, W2, b2". Output: "A1, cache1, A2, cache2".
-        ### START CODE HERE ### (≈ 2 lines of code)
         A1, cache1 = core.linear_activation_forward(X, W1, b1, "relu")
         A2, cache2 =core.linear_activation_forward(A1, W2, b2, "sigmoid")
         ### END CODE HERE ###
 
         # Compute cost
-        ### START CODE HERE ### (≈ 1 line of code)
         cost = core.compute_cost(A2, Y)
-        ### END CODE HERE ###
 
         # Initializing backward propagation
         dA2 = - (np.divide(Y, A2) - np.divide(1 - Y, 1 - A2))
 
         # Backward propagation. Inputs: "dA2, cache2, cache1". Outputs: "dA1, dW2, db2; also dA0 (not used), dW1, db1".
-        ### START CODE HERE ### (≈ 2 lines of code)
         dA1, dW2, db2 = core.linear_activation_backward(dA2, cache2, "sigmoid")
         dA0, dW1, db1 = core.linear_activation_backward(dA1, cache1, "relu")
-        ### END CODE HERE ###
 
         # Set grads['dWl'] to dW1, grads['db1'] to db1, grads['dW2'] to dW2, grads['db2'] to db2
         grads['dW1'] = dW1
@@ -81,9 +71,8 @@ def two_layer_model(X, Y, layers_dims, learning_rate=0.0075, num_iterations=3000
         W2 = parameters["W2"]
         b2 = parameters["b2"]
 
-        # Print the cost every 100 training example
         if print_cost and i % 100 == 0:
-            print("Cost after iteration {}: {}".format(i, np.squeeze(cost)))
+            logging.info("Cost after iteration {}: {}".format(i, np.squeeze(cost)))
         if print_cost and i % 100 == 0:
             costs.append(cost)
 
@@ -117,9 +106,7 @@ def L_layer_model(X, Y, layers_dims, learning_rate=0.0075, num_iterations=3000, 
     costs = []  # keep track of cost
 
     # Parameters initialization. (≈ 1 line of code)
-    ### START CODE HERE ###
     parameters = core.initialize_parameters_deep(layers_dims)
-    ### END CODE HERE ###
 
     # Loop (gradient descent)
     for i in range(0, num_iterations):
@@ -146,7 +133,7 @@ def L_layer_model(X, Y, layers_dims, learning_rate=0.0075, num_iterations=3000, 
 
         # Print the cost every 100 training example
         if print_cost and i % 10 == 0:
-            print("Cost after iteration %i: %f" % (i, cost))
+            logging.info("Cost after iteration %i: %f" % (i, cost))
         if print_cost and i % 10 == 0:
             costs.append(cost)
 
