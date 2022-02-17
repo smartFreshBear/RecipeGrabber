@@ -4,6 +4,9 @@ import urllib.parse
 from bs4 import BeautifulSoup
 from w3lib.url import safe_url_string
 
+import logging
+
+
 import html2text
 
 USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 11_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
@@ -12,9 +15,10 @@ USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 11_4) AppleWebKit/537.36 (K
 def findTitle(html):
     soup = BeautifulSoup(html, 'html.parser')
     title = soup.find('title')
-    return title.string
+    return title.string if title is not None else """title wasn't found"""
 
-def get_all_text_from_url(url, retries = 5):
+
+def get_all_text_from_url(url, retries=5):
     if retries == 0:
         raise Exception("could not handle request")
     try:
@@ -27,10 +31,8 @@ def get_all_text_from_url(url, retries = 5):
         encoding = 'utf-8' if given_encoding is None else given_encoding
         html = response.read().decode(encoding)
 
-
-
         h = html2text.HTML2Text()
-        h.ignore_links = True
+        h.ignore_links = False
         h.ignore_images = True
         title = findTitle(html)
         allText = h.handle(html)
@@ -38,7 +40,7 @@ def get_all_text_from_url(url, retries = 5):
         return allText, title
     except Exception as exc:
         if retries > 0:
-            print("an exception occurred while trying to access url {} trying again \n more details: {}"
+            logging.error("an exception occurred while trying to access url {} trying again \n more details: {}"
                   .format(url, exc))
             time.sleep(1)
             retries = retries - 1

@@ -1,3 +1,4 @@
+import logging
 from dataclasses import dataclass
 from datetime import datetime
 from sqlite3 import IntegrityError
@@ -34,7 +35,7 @@ class BrokenLinkClient:
             self.db.create_all()
             self.db.session.commit()
         except IntegrityError:
-            print("%s url key already inserted".format(url))
+            logging.error("%s url key already inserted".format(url))
 
 
 
