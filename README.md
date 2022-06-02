@@ -1,5 +1,5 @@
 # RecipeGrabber
-An API that doing the following - given a url that points to webside with a recipe, filttering all the "blah blah blah"  before and after the recipe (ingredients and instructions) and returing only them.
+An API that given a url that points to webside with a recipe, filttering all the "blah blah blah"  before and after the recipe (ingredients and instructions) and returing the recipe itself.
 
 the target of the project is for me to take all what I have learned from Coursera first 2 ML courses and teach a computer to recgonize the ingredients and instructions.
 
