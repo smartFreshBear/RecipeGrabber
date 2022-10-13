@@ -3,7 +3,7 @@ import os
 import sys
 
 import gevent
-from flask import Flask, jsonify
+from flask import Flask
 from flask import request
 from geventwebsocket.handler import WebSocketHandler
 
