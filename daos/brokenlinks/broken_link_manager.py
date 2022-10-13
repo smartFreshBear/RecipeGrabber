@@ -25,11 +25,13 @@ class BrokenLinkClient:
         app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
         self.db = SQLAlchemy(app)
         self.db.create_all()
+        self.BrokenLink = define_class(self.db)
+
 
 
 
     def presist_broken_link(self, url, taken_care_of):
-        BrokenLink = define_class(self.db)
+        BrokenLink = self.BrokenLink
         try:
             self.db.session.add(BrokenLink(url=url, taken_care_of= taken_care_of, date= datetime.now()))
             self.db.create_all()
@@ -40,8 +42,16 @@ class BrokenLinkClient:
 
 
     def get_all_broken_links(self):
-        BrokenLink = define_class(self.db)
-        lst = BrokenLink.query.all()
+        lst = self.BrokenLink.query.all()
         return jsonify(lst)
+
+    def delete_broken_links_by_ids(self, ids):
+        for id in ids:
+            self.BrokenLink .query.filter(self.BrokenLink.id == id).delete()
+
+        self.db.session.commit()
+        return 'ok'
+
+
 
 
