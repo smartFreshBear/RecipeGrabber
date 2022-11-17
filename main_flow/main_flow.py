@@ -7,7 +7,7 @@ import requests
 import requests_cache
 
 import time
-import pickle5 as pickle
+import pickle
 import threading
 
 import copy
