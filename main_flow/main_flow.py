@@ -1,4 +1,3 @@
-import logging
 from json import JSONDecodeError
 
 import data_loader
@@ -17,6 +16,10 @@ import numpy as np
 
 from training import training_test_cv_divider
 from utils import presistor
+
+import logging
+logging.basicConfig(level=logging.DEBUG, filename='logs', format='%(asctime)s:%(levelname)s:%(message)s')
+
 
 CYCLE_TIME_TO_SAVE_CACHE = 60 * 60
 
@@ -38,6 +41,8 @@ def loadCache():
     global top_instru_dict
     global top_ingri_dict
 
+    logging.info('loading cache')
+
     parameters_instr = presistor.load_parameter_cache_from_disk(INSTRUCTIONS_PARAMS)
     parameters_ingred = presistor.load_parameter_cache_from_disk(INGREDIENTS_PARAMS)
     top_instru_dict = presistor.load_parameter_cache_from_disk(INSTRUCTIONS_TOP_WORDS)
@@ -48,6 +53,7 @@ def loadCache():
             global from_word_to_steam_cache
             from_word_to_steam_cache = pickle.load(handle)
     except Exception:
+        logging.error('load_cache error')
         from_word_to_steam_cache = {}
 
     return parameters_instr and parameters_ingred and top_instru_dict and top_ingri_dict
