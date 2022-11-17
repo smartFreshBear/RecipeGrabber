@@ -15,11 +15,19 @@ USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 11_4) AppleWebKit/537.36 (K
 def findTitle(html):
     soup = BeautifulSoup(html, 'html.parser')
     title = soup.find('title')
-    return title.string if title is not None else """title wasn't found"""
+    if title is not None:
+        logging.debug("title found")
+        return title.string
+    else:
+        title_error_message = "title wasn't found"
+        logging.error(title_error_message)
+        return title_error_message
+
 
 
 def get_all_text_from_url(url, retries=5):
     if retries == 0:
+        logging.error("get_all_text_from_url: could not handle request")
         raise Exception("could not handle request")
     try:
         url_utf_8 = safe_url_string(url)
