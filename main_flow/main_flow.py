@@ -87,15 +87,21 @@ FROM_NAME_TO_LABELS = {}
 
 def steamimfy(table):
     steamedTable = copy.deepcopy(table)
-
-    for row in steamedTable:
-        steam_list_of_words_with_cache(row)
+    steam_list_of_words_with_cache(steamedTable)
     return steamedTable
 
 
-def steam_list_of_words_with_cache(row):
-    words = row[0].replace('\n', ' ').replace('\r', ' ').replace(',', ' '). \
+
+def replace_chars_in_row(row, words):
+    words += row[0].replace('\n', ' ').replace('\r', ' ').replace(',', ' '). \
         replace('.', ' ').replace(':', ' ').replace('!', ' ').replace('?', ' ').split(' ')
+    return words
+
+
+def steam_list_of_words_with_cache(steamedTable):
+    words = []
+    for row in steamedTable:
+        words += replace_chars_in_row(row, words)
     words = [word for word in words if word != '']
     attention_seekers = list(filter(lambda word: word not in from_word_to_steam_cache, words))
     cached_words = get_already_cached_words(attention_seekers, words)
