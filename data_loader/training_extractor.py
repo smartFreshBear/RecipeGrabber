@@ -1,16 +1,13 @@
 from __future__ import print_function
 
 import logging
-import pickle
 import os.path
-import parsers.parser
-from googleapiclient.discovery import build
-from google_auth_oauthlib.flow import InstalledAppFlow
+import pickle
+
 from google.auth.transport.requests import Request
-import utils.textExtractor
+from googleapiclient.discovery import build
 
 # If modifying these scopes, delete the file token.pickle.
-PATH_TO_CRED = 'D:\\ML\\RecipeGrabber\\data_loader\\resources\client_secret.json'
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
 
 # The ID and range of a sample spreadsheet.
@@ -42,9 +39,6 @@ def load_all_training_examples(should_print=False, ignore_un_tagged=True):
 
 
 def get_clinet_to_training_set():
-    """Shows basic usage of the Sheets API.
-    Prints values from a sample spreadsheet.
-    """
     creds = None
     # The file token.pickle stores the user's access and refresh tokens, and is
     # created automatically when the authorization flow completes for the first
@@ -56,10 +50,6 @@ def get_clinet_to_training_set():
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
-        else:
-            flow = InstalledAppFlow.from_client_secrets_file(
-                PATH_TO_CRED, SCOPES)
-            creds = flow.run_local_server(port=58326)
         # Save the credentials for the next run
         with open('token.pickle', 'wb') as token:
             pickle.dump(creds, token)
