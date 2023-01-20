@@ -1,33 +1,32 @@
-from json import JSONDecodeError
-
-import data_loader
-
-import requests
-import requests_cache
-
-import time
-import pickle5 as pickle
-import threading
-
 import copy
-import utils
+import logging
+import re
+import threading
+import time
+from json import JSONDecodeError
+from pathlib import Path
 
 import numpy as np
+import pickle5 as pickle
+import requests
+import requests_cache
+from tensorflow import keras
 
+import data_loader
+import utils
 from training import training_test_cv_divider
 from utils import presistor
 
-import logging
-logging.basicConfig(level=logging.DEBUG, filename='logs', format='%(asctime)s:%(levelname)s:%(message)s')
-
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s:%(levelname)s:%(message)s')
+logger = logging.getLogger('main_flow')
 
 CYCLE_TIME_TO_SAVE_CACHE = 60 * 60
 
 # Cache file names:
-INSTRUCTIONS_PARAMS = 'inst_params.pkl'
+INSTRUCTIONS_MODEL = 'inst_params_10_5'
 INSTRUCTIONS_TOP_WORDS = 'inst_top_words.pkl'
 
-INGREDIENTS_PARAMS = 'ing_params.pkl'
+INGREDIENTS_MODEL = 'ing_params_10_5'
 INGREDIENTS_TOP_WORDS = 'ing_top_words.pkl'
 
 HEBREW_NLP_END_POINT = 'https://hebrew-nlp.co.il/service/morphology/normalize'
@@ -36,18 +35,29 @@ requests_cache.install_cache(cache_name='hebrew_roots', backend='sqlite', expire
 
 
 def loadCache():
-    global parameters_instr
-    global parameters_ingred
     global top_instru_dict
     global top_ingri_dict
+    global model_instruction
+    global model_ingredients
 
-    logging.info('loading cache')
-
-    parameters_instr = presistor.load_parameter_cache_from_disk(INSTRUCTIONS_PARAMS)
-    parameters_ingred = presistor.load_parameter_cache_from_disk(INGREDIENTS_PARAMS)
     top_instru_dict = presistor.load_parameter_cache_from_disk(INSTRUCTIONS_TOP_WORDS)
     top_ingri_dict = presistor.load_parameter_cache_from_disk(INGREDIENTS_TOP_WORDS)
+    load_from_word_to_steam()
 
+    file_instru = f'{INSTRUCTIONS_MODEL}'
+    file_ingri = f'{INGREDIENTS_MODEL}'
+
+    if not (Path(file_instru).is_dir() and Path(file_ingri).is_dir()):
+        return None
+
+    logging.info('loading cache')
+    model_instruction = keras.models.load_model(file_instru)
+    model_ingredients = keras.models.load_model(file_ingri)
+
+    return model_instruction and model_ingredients and top_instru_dict and top_ingri_dict
+
+
+def load_from_word_to_steam():
     try:
         with open('data.pkl', 'rb') as handle:
             global from_word_to_steam_cache
@@ -55,8 +65,6 @@ def loadCache():
     except Exception:
         logging.error('load_cache error')
         from_word_to_steam_cache = {}
-
-    return parameters_instr and parameters_ingred and top_instru_dict and top_ingri_dict
 
 
 def periodically_save_cache():
@@ -86,22 +94,21 @@ FROM_NAME_TO_LABELS = {}
 
 
 def steamimfy(table):
-    steamedTable = copy.deepcopy(table)
+    steamed_table = copy.deepcopy(table)
+    only_text_respective = [clean_text(row[0]) for row in steamed_table]
+    prepare_stem_mapping(only_text_respective)
 
-    for row in steamedTable:
-        steam_list_of_words_with_cache(row)
-    return steamedTable
+    for row_i in range(len(steamed_table)):
+        steamed_table[row_i][0] = [''.join(from_word_to_steam_cache[word]) for word in only_text_respective[row_i]]
+    return steamed_table
 
 
-def steam_list_of_words_with_cache(row):
-    words = row[0].replace('\n', ' ').replace('\r', ' ').replace(',', ' '). \
-        replace('.', ' ').replace(':', ' ').replace('!', ' ').replace('?', ' ').split(' ')
-    words = [word for word in words if word != '']
+def prepare_stem_mapping(text_to_steam_list):
+    words = [word for words_of_row in text_to_steam_list for word in words_of_row]
     attention_seekers = list(filter(lambda word: word not in from_word_to_steam_cache, words))
-    cached_words = get_already_cached_words(attention_seekers, words)
-    answer_from_api = []
+    get_already_cached_words(attention_seekers, words)
     try:
-        if attention_seekers != []:
+        if attention_seekers:
 
             request = {
                 'token': 'vhZZt9hGGX20aUW',
@@ -116,10 +123,13 @@ def steam_list_of_words_with_cache(row):
             for i in range(len(attention_seekers)):
                 from_word_to_steam_cache[attention_seekers[i]] = answer_from_api[i]
 
-        row[0] = answer_from_api.extend(cached_words)
-        row[0] = answer_from_api
     except JSONDecodeError as jsonExc:
         logging.info("had a problem parsing this row {} \n more info: {}".format(row, jsonExc))
+
+
+def clean_text(text):
+    purified_text = re.sub(r'[^\w\s]', '', text)
+    return purified_text.split()
 
 
 def get_already_cached_words(attention_seekers, words):
@@ -197,8 +207,6 @@ def enrich_count_char_for_index(vectorized_instr, table, index, char):
         vectorized_instr[i][index] = (row[0].count(char) / int(row[3]))
 
 
-# TODO add test to this one!
-
 def enrich_ratio_word_to_numbers(vectorized_instr, table):
     for i in range(len(table)):
         row = table[i]
@@ -230,8 +238,8 @@ def load_data():
 
     enrich_tables_vector(table, vectorized_ingrid, vectorized_instr)
 
-    FROM_NAME_TO_LABELS[INSTRUCTIONS_PARAMS] = [vectorized_instr, instruction_lbls]
-    FROM_NAME_TO_LABELS[INGREDIENTS_PARAMS] = [vectorized_ingrid, ingrid_lbls]
+    FROM_NAME_TO_LABELS[INSTRUCTIONS_MODEL] = [vectorized_instr, instruction_lbls]
+    FROM_NAME_TO_LABELS[INGREDIENTS_MODEL] = [vectorized_ingrid, ingrid_lbls]
 
 
 def example_to_vector(txt):
@@ -251,114 +259,91 @@ def calculate_amount_of_words(table):
 
 def enrich_tables_vector(table, vectorized_ingrid, vectorized_instr):
     calculate_amount_of_words(table)
-    enrich_count_char_for_index(vectorized_ingrid, table, NEW_LINE_TO_WORD_RATIO_IDX, '\n')
-    enrich_count_char_for_index(vectorized_ingrid, table, EXCLAMATION_MARKS_VALUES_IDX, '!')
-    enrich_count_char_for_index(vectorized_ingrid, table, QUESTION_MARKS_VALUES_IDX, '?')
-    enrich_count_char_for_index(vectorized_ingrid, table, DOT_MARKS_VALUES_IDX, '.')
-    enrich_count_char_for_index(vectorized_ingrid, table, COMMA_MARKS_VALUES_IDX, ':')
-    enrich_count_char_for_index(vectorized_ingrid, table, SLASH_MARKS_VALUES_IDX, '/')
-    enrich_count_char_for_index(vectorized_ingrid, table, DASH_MARKS_VALUES_IDX, '-')
-    enrich_count_char_for_index(vectorized_ingrid, table, PSIKIM_MARKS_VALUES_IDX, ',')
-
-    enrich_ratio_word_to_numbers(vectorized_ingrid, table)
-
-    enrich_count_char_for_index(vectorized_instr, table, NEW_LINE_TO_WORD_RATIO_IDX, '\n')
-    enrich_count_char_for_index(vectorized_instr, table, EXCLAMATION_MARKS_VALUES_IDX, '!')
-    enrich_count_char_for_index(vectorized_instr, table, QUESTION_MARKS_VALUES_IDX, '?')
-    enrich_count_char_for_index(vectorized_instr, table, DOT_MARKS_VALUES_IDX, '.')
-    enrich_count_char_for_index(vectorized_instr, table, COMMA_MARKS_VALUES_IDX, ':')
-    enrich_count_char_for_index(vectorized_instr, table, SLASH_MARKS_VALUES_IDX, '/')
-    enrich_count_char_for_index(vectorized_instr, table, DASH_MARKS_VALUES_IDX, '-')
-    enrich_count_char_for_index(vectorized_instr, table, PSIKIM_MARKS_VALUES_IDX, ',')
-
-    enrich_ratio_word_to_numbers(vectorized_instr, table)
+    enrich_vectors(table, vectorized_ingrid)
+    enrich_vectors(table, vectorized_instr)
 
 
-def train(num_of_neurons_in_hidden_layer, learning_rate, num_iterations, name_group, test_error_tolerance):
-    layers_dims = [TOP_WORD_NUM + EXTRA_FEATURES_NUM, num_of_neurons_in_hidden_layer, 1]
+def enrich_vectors(table, vecotrized):
+    enrich_count_char_for_index(vecotrized, table, NEW_LINE_TO_WORD_RATIO_IDX, '\n')
+    enrich_count_char_for_index(vecotrized, table, EXCLAMATION_MARKS_VALUES_IDX, '!')
+    enrich_count_char_for_index(vecotrized, table, QUESTION_MARKS_VALUES_IDX, '?')
+    enrich_count_char_for_index(vecotrized, table, DOT_MARKS_VALUES_IDX, '.')
+    enrich_count_char_for_index(vecotrized, table, COMMA_MARKS_VALUES_IDX, ':')
+    enrich_count_char_for_index(vecotrized, table, SLASH_MARKS_VALUES_IDX, '/')
+    enrich_count_char_for_index(vecotrized, table, DASH_MARKS_VALUES_IDX, '-')
+    enrich_count_char_for_index(vecotrized, table, PSIKIM_MARKS_VALUES_IDX, ',')
+    enrich_ratio_word_to_numbers(vecotrized, table)
+
+
+def train(name_group, test_error_tolerance):
     test_error = 10
-    parameters = {}
+
+    model = create_model()
 
     while test_error_tolerance < test_error:
         training_ex, training_labels, validation_ex, validation_labels, test_ex, test_labels = \
             training_test_cv_divider.divided_training_test(FROM_NAME_TO_LABELS[name_group][0],
                                                            FROM_NAME_TO_LABELS[name_group][1], 0.8)
 
-        parameters = utils.L_layer_network.L_layer_model(training_ex.T,
-                                                         training_labels.T,
-                                                         layers_dims,
-                                                         learning_rate,
-                                                         num_iterations,
-                                                         print_cost=False,
-                                                         plot=False)
+        model.fit(training_ex, training_labels, epochs=30,
+                  validation_data=(validation_ex, validation_labels))
 
-        presistor.presist_parameters_to_disk(parameters, name_group)
+        test_error, _ = model.evaluate(test_ex, test_labels)
 
-        train_error = error_percent(training_ex, training_labels, parameters)
-        validation_error = error_percent(validation_ex, validation_labels, parameters)
-        test_error = error_percent(test_ex, test_labels, parameters)
+    model.save(f'{name_group}')
 
-        logging.info("training {0} error: {1} ".format(name_group, str(train_error)))
-        logging.info("validation {0} error : {1} ".format(name_group, str(validation_error)))
-        logging.info("test {0} error : {1} ".format(name_group, str(test_error)))
-
-    return parameters
+    return model
 
 
-def error_percent(vectorized_example, labels, parameters):
-    results_training_set = utils.core_methods.predict(vectorized_example.T,
-                                                      parameters=parameters)
-    return 1 - np.sum((results_training_set == labels.T)) / vectorized_example.T.shape[1]
-
-
-def predict_ingri(text):
-    vectorized_instr, instruction_lbls, vectorized_ingrid, ingrid_lbls = example_to_vector(text)
-
-    predictions = utils.core_methods.predict(vectorized_ingrid.T,
-                                             parameters=parameters_ingred)
-
-    predicted = predictions[0][1]
-
-    return predicted
-
-
-def predict_instru(text):
-    vectorized_instr, instruction_lbls, vectorized_ingrid, ingrid_lbls = example_to_vector(text)
-
-    predictions = utils.core_methods.predict(vectorized_instr.T,
-                                             parameters=parameters_instr)
-    predicted = predictions[0][1]
-
-    return predicted
+def create_model():
+    model = keras.models.Sequential()
+    model.add(keras.layers.Dense(TOP_WORD_NUM + EXTRA_FEATURES_NUM, activation="relu"))
+    model.add(keras.layers.Dense(10, activation="relu"))
+    model.add(keras.layers.Dense(3, activation="relu"))
+    model.add(keras.layers.Dense(1, activation="sigmoid"))
+    model.compile(
+        loss='binary_crossentropy',
+        optimizer="sgd",
+        metrics=["accuracy"])
+    return model
 
 
 def predict_ingri_probes(text):
-    vectorized_instr, instruction_lbls, vectorized_ingrid, ingrid_lbls = example_to_vector(text)
-
-    probes, caches = utils.core_methods.L_model_forward(vectorized_ingrid.T, parameters=parameters_ingred)
-    ans = probes[0][1]
-
-    return ans
+    _, _, vectorized_ingrid, ingrid_lbls = example_to_vector(text)
+    return predict_vector_with_model(model_ingredients, vectorized_ingrid)
 
 
 def predict_instru_probes(text):
-    vectorized_instr, instruction_lbls, vectorized_ingrid, ingrid_lbls = example_to_vector(text)
+    vectorized_instr, instruction_lbls, _, _ = example_to_vector(text)
+    return predict_vector_with_model(model_instruction, vectorized_instr)
 
-    probes, caches = utils.core_methods.L_model_forward(vectorized_instr.T, parameters=parameters_instr)
-    ans = probes[0][1]
+
+def predict_vector_with_model(model, vector):
+    try:
+        ans = model(vector)
+        ans = ans[1][0]
+    except Exception as e:
+        logger.error(f'error has occurred during prediction, {e}')
+        raise e
 
     return ans
 
 
 def main():
     global FROM_NAME_TO_LABELS
+    global parameters_instr
+    global parameters_ingred
+    global top_instru_dict
+    global top_ingri_dict
+    global model_instruction
+    global model_ingredients
 
     if not loadCache():
         load_data()
-        train(4, learning_rate=0.5, num_iterations=170, name_group=INSTRUCTIONS_PARAMS,
-              test_error_tolerance=0.037)
-        train(4, learning_rate=0.5, num_iterations=175, name_group=INGREDIENTS_PARAMS,
-              test_error_tolerance=0.01)
+        model_instruction = train(name_group=INSTRUCTIONS_MODEL,
+                                  test_error_tolerance=0.037)
+        model_ingredients = train(name_group=INGREDIENTS_MODEL,
+                                  test_error_tolerance=0.01)
 
     caching_thread = threading.Thread(target=periodically_save_cache)
     caching_thread.start()
