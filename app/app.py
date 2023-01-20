@@ -2,14 +2,15 @@ import logging
 import os
 import sys
 
-import gevent
+import cherrypy
 from flask import Flask
 from flask import request
-from geventwebsocket.handler import WebSocketHandler
+from paste.translogger import TransLogger
+
 
 print(sys.path.append(os.getcwd()))
 
-from utils import textExtractor
+from utils import text_extractor
 from apputils import text_prettifer
 import main_flow
 from algorithms import window_key_word_based_algo
@@ -18,9 +19,8 @@ from daos.brokenlinks import broken_link_manager
 app = Flask(__name__)
 print(os.path.dirname(os.path.realpath(__file__)))
 
-application = app
-
-broken_link_dao = broken_link_manager.BrokenLinkClient(application)
+with app.app_context():
+    broken_link_dao = broken_link_manager.BrokenLinkClient(app)
 
 main_flow.main_flow.main()
 
@@ -70,7 +70,7 @@ def find_recipe_in_url_window_algo_based():
     instructions = request.form['instructions'].lower() == "true"
     ingredients = request.form['ingredients'].lower() == "true"
 
-    all_text, title = textExtractor.get_all_text_from_url(url=url)
+    all_text, title = text_extractor.get_all_text_from_url(url=url)
     ingred_paragraph, instr_paragraph = window_key_word_based_algo.extract(ingredients, instructions, all_text)
 
     return create_json_response(ingred_paragraph, instr_paragraph, title, url)
@@ -84,6 +84,27 @@ def create_json_response(ingred_paragraph, instr_paragraph, title, url):
     return json_response
 
 
+def run_server():
+    # Enable WSGI access logging via Paste
+    app_logged = TransLogger(app)
+
+    # Mount the WSGI callable object (app) on the root directory
+    cherrypy.tree.graft(app_logged, '/')
+
+    # Set the configuration of the web server
+    cherrypy.config.update({
+        'engine.autoreload_on': True,
+        'log.screen': True,
+        'server.socket_port': 5000,
+        'server.socket_host': '0.0.0.0'
+    })
+
+    # Start the CherryPy WSGI web server
+    cherrypy.engine.start()
+    cherrypy.engine.block()
+
+
 if __name__ == '__main__':
-    server = gevent.pywsgi.WSGIServer((u'0.0.0.0', 5000), app, handler_class=WebSocketHandler)
-    server.serve_forever()
+    # server = gevent.pywsgi.WSGIServer((u'0.0.0.0', 5000), app, handler_class=WebSocketHandler)
+    # server.serve_forever()
+    run_server()
