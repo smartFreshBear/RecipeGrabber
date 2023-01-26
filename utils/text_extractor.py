@@ -3,11 +3,10 @@ import urllib.request
 import urllib.parse
 from bs4 import BeautifulSoup
 from w3lib.url import safe_url_string
-
 import logging
-
-
 import html2text
+
+logging.getLogger('text.extractor')
 
 USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 11_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
 
@@ -22,7 +21,6 @@ def findTitle(html):
         title_error_message = "title wasn't found"
         logging.error(title_error_message)
         return title_error_message
-
 
 
 def get_all_text_from_url(url, retries=5):
@@ -49,7 +47,7 @@ def get_all_text_from_url(url, retries=5):
     except Exception as exc:
         if retries > 0:
             logging.error("an exception occurred while trying to access url {} trying again \n more details: {}"
-                  .format(url, exc))
+                          .format(url, exc))
             time.sleep(1)
             retries = retries - 1
             return get_all_text_from_url(url, retries)
