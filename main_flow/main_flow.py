@@ -23,10 +23,10 @@ logger = logging.getLogger('main_flow')
 CYCLE_TIME_TO_SAVE_CACHE = 60 * 60
 
 # Cache file names:
-INSTRUCTIONS_MODEL = 'inst_params_10_5'
+INSTRUCTIONS_MODEL = 'inst_params'
 INSTRUCTIONS_TOP_WORDS = 'inst_top_words.pkl'
 
-INGREDIENTS_MODEL = 'ing_params_10_5'
+INGREDIENTS_MODEL = 'ing_params'
 INGREDIENTS_TOP_WORDS = 'ing_top_words.pkl'
 
 HEBREW_NLP_END_POINT = 'https://hebrew-nlp.co.il/service/morphology/normalize'
@@ -95,18 +95,23 @@ FROM_NAME_TO_LABELS = {}
 
 def steamimfy(table):
     steamed_table = copy.deepcopy(table)
-    only_text_respective = [clean_text(row[0]) for row in steamed_table]
+    only_text_respective = [row[0] for row in steamed_table]
     prepare_stem_mapping(only_text_respective)
 
     for row_i in range(len(steamed_table)):
-        steamed_table[row_i][0] = [''.join(from_word_to_steam_cache[word]) for word in only_text_respective[row_i]]
+        steamed_table[row_i][0] = convert_all_text_to_stem_only(only_text_respective[row_i])
     return steamed_table
 
 
+def convert_all_text_to_stem_only(text):
+    return [''.join(from_word_to_steam_cache.get(word, '')) for word in text.split()]
+
+
 def prepare_stem_mapping(text_to_steam_list):
-    words = [word for words_of_row in text_to_steam_list for word in words_of_row]
+    cleaned_texted = [clean_text(text) for text in text_to_steam_list]
+    words = [word for words_of_row in cleaned_texted for word in words_of_row]
     attention_seekers = list(filter(lambda word: word not in from_word_to_steam_cache, words))
-    get_already_cached_words(attention_seekers, words)
+
     try:
         if attention_seekers:
 
@@ -211,8 +216,7 @@ def enrich_ratio_word_to_numbers(vectorized_instr, table):
     for i in range(len(table)):
         row = table[i]
         amount_of_words = int(row[3])
-        # numbers = [str(s) for s in row[0].split() if s.isnumeric()] vs...
-        numbers = [str(s) for s in row[0].split() if s.isdigit()]
+        numbers = re.findall(r'\d+', row[0])
         vectorized_instr[i][DIGITS_TO_WORDS_RATIO_IDX] = count_amount_of_n_digits(numbers, 1) / amount_of_words
         vectorized_instr[i][DIGITS_TO_WORDS_RATIO_IDX + 1] = count_amount_of_n_digits(numbers, 2) / amount_of_words
         vectorized_instr[i][DIGITS_TO_WORDS_RATIO_IDX + 2] = count_amount_of_n_digits(numbers, 3) / amount_of_words
@@ -221,7 +225,7 @@ def enrich_ratio_word_to_numbers(vectorized_instr, table):
 
 
 def count_amount_of_n_digits(numbers, digit_count):
-    return len(list((filter((lambda n: len(n) > digit_count), numbers))))
+    return len(list((filter((lambda n: len(n) == digit_count), numbers))))
 
 
 def load_data():
@@ -243,11 +247,13 @@ def load_data():
 
 
 def example_to_vector(txt):
-    single_row_table_with_text = [['txt', 'ing', 'instr'], [txt, '0', '0']]
-    steamed = steamimfy(single_row_table_with_text)
-    vectorized_instr, instruction_lbls = vectorized(steamed, top_instru_dict, 2)
-    vectorized_ingrid, ingrid_lbls = vectorized(steamed, top_ingri_dict, 1)
-    enrich_tables_vector(single_row_table_with_text, vectorized_ingrid, vectorized_instr)
+    steamed_text = convert_all_text_to_stem_only(txt)
+    single_row_table_with__stemed_text = [['txt', 'ing', 'instr'], [steamed_text, '0', '0']]
+    single_row_table_with_just_text = [['txt', 'ing', 'instr'], [txt, '0', '0']]
+
+    vectorized_instr, instruction_lbls = vectorized(single_row_table_with__stemed_text, top_instru_dict, 2)
+    vectorized_ingrid, ingrid_lbls = vectorized(single_row_table_with__stemed_text, top_ingri_dict, 1)
+    enrich_tables_vector(single_row_table_with_just_text, vectorized_ingrid, vectorized_instr)
 
     return vectorized_instr, instruction_lbls, vectorized_ingrid, ingrid_lbls
 
@@ -298,8 +304,8 @@ def train(name_group, test_error_tolerance):
 def create_model():
     model = keras.models.Sequential()
     model.add(keras.layers.Dense(TOP_WORD_NUM + EXTRA_FEATURES_NUM, activation="relu"))
-    model.add(keras.layers.Dense(10, activation="relu"))
-    model.add(keras.layers.Dense(3, activation="relu"))
+    model.add(keras.layers.Dense(8, activation="relu"))
+    model.add(keras.layers.Dense(2, activation="relu"))
     model.add(keras.layers.Dense(1, activation="sigmoid"))
     model.compile(
         loss='binary_crossentropy',
