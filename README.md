@@ -4,8 +4,8 @@ An API that given a url that points to website with a recipe, filtering all the
 returning the recipe itself.
 
 The purpose of this web service is to:
-1- Help people and application summarize recipe website.
-2- Be used as Playground for people want to get hands-on experience working on medium size project.
+* Help people and application summarize recipe website.
+* Be used as Playground for people want to get hands-on experience working on medium size project.
 
 
 How to run the project? 
