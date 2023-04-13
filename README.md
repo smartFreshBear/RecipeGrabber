@@ -9,7 +9,7 @@ The purpose of this web service is to:
 
 
 How to run the project? 
-Mind that the instruction are for macOs/Linux. regarding microsoft, welcome to add!
+Mind that the instruction are for macOs/Linux. regarding Windows, welcome to add!
 * install Python 3.9
 
     ```
