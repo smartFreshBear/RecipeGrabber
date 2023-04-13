@@ -41,7 +41,7 @@ point you might need to fix some local env related errors)
 In order to communicate with it we need to send HTTP requests, a good way to do so nicely and elegantly is PostMan
 [read about it and install it](https://www.postman.com/).
 * It's time to send your first request!
-* Use postman OR curl(shell too to send http requtests) to send the following to our web service:
+* Use postman OR curl(shell tool to send http requtests) to send the following to request to our web service:
 
 ```
 curl --location --request POST 'http://localhost:5000 /find_recipe_in_url/' \
