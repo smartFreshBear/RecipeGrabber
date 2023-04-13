@@ -37,8 +37,8 @@ run the project locally. so put some nice music, brew yourself a coffee and sear
 * Run the app/app.py, the working directory should be ../RecipeGrabber (see Chillign Note again! it is yet another 
 point you might need to fix some local env related errors)
 
-* As you understand from the initial description this project is a actually a web service
-to communicate with it we need to send HTTP requests, a good way to do so nicely and elegantly is PostMan
+* As you understand from the initial description this project is a actually a web service.
+In order to communicate with it we need to send HTTP requests, a good way to do so nicely and elegantly is PostMan
 [read about it and install it](https://www.postman.com/).
 * It's time to send your first request!
 * Use postman OR curl(shell too to send http requtests) to send the following to our web service:
