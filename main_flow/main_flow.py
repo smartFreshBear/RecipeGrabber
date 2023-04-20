@@ -7,7 +7,7 @@ from json import JSONDecodeError
 from pathlib import Path
 
 import numpy as np
-import pickle5 as pickle
+import pickle as pickle
 import requests
 import requests_cache
 from tensorflow import keras

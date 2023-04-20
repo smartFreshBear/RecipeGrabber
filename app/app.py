@@ -1,12 +1,12 @@
 import logging
 import os
 import sys
+import requests
 
 import cherrypy
 from flask import Flask
 from flask import request
 from paste.translogger import TransLogger
-
 
 print(sys.path.append(os.getcwd()))
 
@@ -82,6 +82,23 @@ def create_json_response(ingred_paragraph, instr_paragraph, title, url):
     json_response['title'] = title
     json_response['url'] = url
     return json_response
+
+
+@app.route('/populate_training_example_from_url/', methods=['POST'])
+def populate_training_example_from_url():
+    url = request.form['url']
+    password = request.form['password']
+
+    if password != "toy_password":
+        return {'error': 'Invalid password'}, 401
+
+    response = requests.post(url)
+
+    rows_to_add = [('title', 'is ingredients', 'is instructions'), ...]
+    spreadsheet_id = "1NGRUyzImlaUd-UrTkNXSd1JB7OOHnw6e1h4AohRXFK8"
+    #TODO: populate the spreadsheet
+
+    return {'message': 'Rows added to spreadsheet'}, 200
 
 
 def run_server():
