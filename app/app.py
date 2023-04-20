@@ -69,7 +69,7 @@ def find_recipe_in_url_window_algo_based():
 
     instructions = request.form['instructions'].lower() == "true"
     ingredients = request.form['ingredients'].lower() == "true"
-
+    print('instructions are:' + instructions)
     all_text, title = text_extractor.get_all_text_from_url(url=url)
     ingred_paragraph, instr_paragraph = window_key_word_based_algo.extract(ingredients, instructions, all_text)
 
@@ -86,17 +86,10 @@ def create_json_response(ingred_paragraph, instr_paragraph, title, url):
 
 @app.route('/populate_training_example_from_url/', methods=['POST'])
 def populate_training_example_from_url():
-    url = request.form['url']
     password = request.form['password']
 
     if password != "toy_password":
         return {'error': 'Invalid password'}, 401
-
-    response = requests.post(url)
-
-    rows_to_add = [('title', 'is ingredients', 'is instructions'), ...]
-    spreadsheet_id = "1NGRUyzImlaUd-UrTkNXSd1JB7OOHnw6e1h4AohRXFK8"
-    #TODO: populate the spreadsheet
 
     return {'message': 'Rows added to spreadsheet'}, 200
 
