@@ -17,6 +17,7 @@ from algorithms import window_key_word_based_algo
 from daos.brokenlinks import broken_link_manager
 
 app = Flask(__name__)
+app.config['URL_TIMEOUT'] = 10
 print(os.path.dirname(os.path.realpath(__file__)))
 
 with app.app_context():
