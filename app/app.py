@@ -76,6 +76,14 @@ def find_recipe_in_url_window_algo_based():
 
     return create_json_response(ingred_paragraph, instr_paragraph, title, url)
 
+@app.route('/populate_training_example_from_url/', methods=['POST'])
+def populate_training_example_from_url():
+    password = request.form.get('password')
+
+    if password != "toy_password":
+        return {'error': 'Invalid password'}, 401
+
+    return 'OK', 200
 
 def create_json_response(ingred_paragraph, instr_paragraph, title, url):
     json_response = text_prettifer.process({'ingredients': ingred_paragraph,
