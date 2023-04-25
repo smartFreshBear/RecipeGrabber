@@ -1,5 +1,7 @@
-import main_flow.main_flow
+from stemming import stemming
 import parsers.parser
+
+stemmer = stemming.StemmerHebrew()
 
 INGREDIENTS = 'ingredients'
 INSTRUCTIONS = 'instructions'
@@ -33,7 +35,7 @@ def extract(ingredients, instructions, all_text):
 def extract_paragraph_from_one_of_the_indices(all_relevant_indices, lines_of_text, type):
     best_score_so_far = 0
     best_paragraph = ''
-    main_flow.main_flow.prepare_stem_mapping(lines_of_text)
+    stemmer.prepare_stem_mapping(lines_of_text)
     for i in range(0, len(all_relevant_indices)):
         first_line = all_relevant_indices[i]
         last_line = parsers.parser.find_last_index(first_line, lines_of_text, type)
