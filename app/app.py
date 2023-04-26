@@ -1,10 +1,11 @@
 import logging
 import os
 import sys
+import traceback
 
 import cherrypy
 from flask import Flask
-from flask import request
+from flask import request, jsonify
 from paste.translogger import TransLogger
 
 
@@ -31,7 +32,11 @@ logging.info("server is up and running :)")
 
 @app.route('/train')
 def train():
-    return main_flow.main_flow.main()
+    try:
+        return main_flow.main_flow.main()
+    except RuntimeError as exc:
+        print(traceback.format_exc())
+        return jsonify({"error": "Thread object was called more than once."}), 500
 
 
 @app.route('/find_recipe_in_text/', methods=['POST'])
@@ -69,11 +74,17 @@ def find_recipe_in_url_window_algo_based():
 
     instructions = request.form['instructions'].lower() == "true"
     ingredients = request.form['ingredients'].lower() == "true"
+    try:
+        all_text, title = text_extractor.get_all_text_from_url(url=url)
+        ingred_paragraph, instr_paragraph = window_key_word_based_algo.extract(ingredients, instructions, all_text)
+        return create_json_response(ingred_paragraph, instr_paragraph, title, url)
+    except TimeoutError as exc:
+        return jsonify({"error": "The request to the URL server took too long. try again later."}), 500
+    except BlockingIOError as exc:
+        return jsonify({"error": "UR: timed out too many times and have been blocked, try again later.."}), 500
+    except ValueError:
+        return jsonify({"error": "Could not handle The request"}), 500
 
-    all_text, title = text_extractor.get_all_text_from_url(url=url)
-    ingred_paragraph, instr_paragraph = window_key_word_based_algo.extract(ingredients, instructions, all_text)
-
-    return create_json_response(ingred_paragraph, instr_paragraph, title, url)
 
 
 def create_json_response(ingred_paragraph, instr_paragraph, title, url):
