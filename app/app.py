@@ -4,7 +4,7 @@ import sys
 
 import cherrypy
 from flask import Flask
-from flask import request
+from flask import request, jsonify
 from paste.translogger import TransLogger
 
 
@@ -91,6 +91,25 @@ def create_json_response(ingred_paragraph, instr_paragraph, title, url):
     json_response['title'] = title
     json_response['url'] = url
     return json_response
+
+
+@app.route('/en/find_recipe_in_url/', methods=['POST'])
+def en_find_recipe_in_url_window_algo_based():
+    url = request.form['url']
+    instructions = request.form['instructions'].lower() == "true"
+    ingredients = request.form['ingredients'].lower() == "true"
+
+    return jsonify({
+        "ingredients": ["Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+                            "Integer eu posuere massa. Mauris ut lectus feugiat,",
+                        "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+                        "Integer eu posuere massa. Mauris ut lectus feugiat."],
+        "instructions": ["Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+                            "Integer eu posuere massa. Mauris ut lectus feugiat,",
+                            " mattis est vel, finibus ligula. Maecenas euismod lacus non pellentesque tempus."],
+        "title": "Best Mock Recipe In The West",
+        "url": "www.mock-example.com"
+    }), 200
 
 
 def run_server():
