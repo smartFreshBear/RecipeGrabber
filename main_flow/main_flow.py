@@ -3,22 +3,21 @@ import logging
 import re
 import threading
 import time
-from json import JSONDecodeError
 from pathlib import Path
 
 import numpy as np
 import pickle5 as pickle
-import requests
+
 import requests_cache
 from tensorflow import keras
-
 import data_loader
-import utils
 from training import training_test_cv_divider
 from utils import presistor
+from stemming import stemming
 
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s:%(levelname)s:%(message)s')
 logger = logging.getLogger('main_flow')
+stemmer = stemming.StemmerHebrew()
 
 CYCLE_TIME_TO_SAVE_CACHE = 60 * 60
 
@@ -42,7 +41,9 @@ def loadCache():
 
     top_instru_dict = presistor.load_parameter_cache_from_disk(INSTRUCTIONS_TOP_WORDS)
     top_ingri_dict = presistor.load_parameter_cache_from_disk(INGREDIENTS_TOP_WORDS)
-    load_from_word_to_steam()
+
+    global from_word_to_stem_cache
+    from_word_to_stem_cache = stemmer.load_from_word_to_stem()
 
     file_instru = f'{INSTRUCTIONS_MODEL}'
     file_ingri = f'{INGREDIENTS_MODEL}'
@@ -57,24 +58,14 @@ def loadCache():
     return model_instruction and model_ingredients and top_instru_dict and top_ingri_dict
 
 
-def load_from_word_to_steam():
-    try:
-        with open('data.pkl', 'rb') as handle:
-            global from_word_to_steam_cache
-            from_word_to_steam_cache = pickle.load(handle)
-    except Exception:
-        logging.error('load_cache error')
-        from_word_to_steam_cache = {}
-
-
 def periodically_save_cache():
     while True:
         # Wait for new data to accumulate
         time.sleep(CYCLE_TIME_TO_SAVE_CACHE)
 
         # Save to disk
-        with open('data.pkl', 'wb') as handle:
-            pickle.dump(from_word_to_steam_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
+        with open('../stemming/data.pkl', 'wb') as handle:
+            pickle.dump(from_word_to_stem_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 
 TOP_WORD_NUM = 1500
@@ -93,53 +84,9 @@ DIGITS_TO_WORDS_RATIO_IDX = PSIKIM_MARKS_VALUES_IDX + 1
 FROM_NAME_TO_LABELS = {}
 
 
-def steamimfy(table):
-    steamed_table = copy.deepcopy(table)
-    only_text_respective = [row[0] for row in steamed_table]
-    prepare_stem_mapping(only_text_respective)
-
-    for row_i in range(len(steamed_table)):
-        steamed_table[row_i][0] = convert_all_text_to_stem_only(only_text_respective[row_i])
-    return steamed_table
-
-
-def convert_all_text_to_stem_only(text):
-    return [''.join(from_word_to_steam_cache.get(word, '')) for word in text.split()]
-
-
-def prepare_stem_mapping(text_to_steam_list):
-    cleaned_texted = [clean_text(text) for text in text_to_steam_list]
-    words = [word for words_of_row in cleaned_texted for word in words_of_row]
-    attention_seekers = list(filter(lambda word: word not in from_word_to_steam_cache, words))
-
-    try:
-        if attention_seekers:
-
-            request = {
-                'token': 'vhZZt9hGGX20aUW',
-                'type': 'SEARCH',
-                'text': ' ## '.join(attention_seekers)
-            }
-
-            response = requests.post(HEBREW_NLP_END_POINT, json=request)
-            json_response = response.json()
-            flatten_lst_of_words = [item for sublist in json_response for item in sublist]
-            answer_from_api = ''.join(flatten_lst_of_words).split('##')
-            for i in range(len(attention_seekers)):
-                from_word_to_steam_cache[attention_seekers[i]] = answer_from_api[i]
-
-    except JSONDecodeError as jsonExc:
-        logging.info("had a problem parsing this row {} \n more info: {}".format(row, jsonExc))
-
-
-def clean_text(text):
-    purified_text = re.sub(r'[^\w\s]', '', text)
-    return purified_text.split()
-
-
 def get_already_cached_words(attention_seekers, words):
     cached_words = [item for item in words if item not in attention_seekers]
-    cached_words = list(map(lambda w: from_word_to_steam_cache[w], cached_words))
+    cached_words = list(map(lambda w: from_word_to_stem_cache[w], cached_words))
     return cached_words
 
 
@@ -230,7 +177,7 @@ def count_amount_of_n_digits(numbers, digit_count):
 
 def load_data():
     table = data_loader.training_extractor.load_all_training_examples(False)
-    steamed_dict = steamimfy(table)
+    steamed_dict = stemmer.stemmify(table)
     top_instruction_words, top_ingredients_words = top_words(steamed_dict, TOP_WORD_NUM)
 
     # Save dictionaries to disk for caching
@@ -247,7 +194,7 @@ def load_data():
 
 
 def example_to_vector(txt):
-    steamed_text = convert_all_text_to_stem_only(txt)
+    steamed_text = stemmer.convert_all_text_to_stem_only(txt)
     single_row_table_with__stemed_text = [['txt', 'ing', 'instr'], [steamed_text, '0', '0']]
     single_row_table_with_just_text = [['txt', 'ing', 'instr'], [txt, '0', '0']]
 

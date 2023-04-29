@@ -4,7 +4,7 @@ import sys
 
 import cherrypy
 from flask import Flask
-from flask import request
+from flask import request, jsonify
 from paste.translogger import TransLogger
 
 
@@ -17,6 +17,7 @@ from algorithms import window_key_word_based_algo
 from daos.brokenlinks import broken_link_manager
 
 app = Flask(__name__)
+app.config['URL_TIMEOUT'] = 10
 print(os.path.dirname(os.path.realpath(__file__)))
 
 with app.app_context():
@@ -75,6 +76,14 @@ def find_recipe_in_url_window_algo_based():
 
     return create_json_response(ingred_paragraph, instr_paragraph, title, url)
 
+@app.route('/populate_training_example_from_url/', methods=['POST'])
+def populate_training_example_from_url():
+    password = request.form.get('password')
+
+    if password != "toy_password":
+        return {'error': 'Invalid password'}, 401
+
+    return 'OK', 200
 
 def create_json_response(ingred_paragraph, instr_paragraph, title, url):
     json_response = text_prettifer.process({'ingredients': ingred_paragraph,
@@ -82,6 +91,25 @@ def create_json_response(ingred_paragraph, instr_paragraph, title, url):
     json_response['title'] = title
     json_response['url'] = url
     return json_response
+
+
+@app.route('/en/find_recipe_in_url/', methods=['POST'])
+def en_find_recipe_in_url_window_algo_based():
+    url = request.form['url']
+    instructions = request.form['instructions'].lower() == "true"
+    ingredients = request.form['ingredients'].lower() == "true"
+
+    return jsonify({
+        "ingredients": ["Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+                            "Integer eu posuere massa. Mauris ut lectus feugiat,",
+                        "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+                        "Integer eu posuere massa. Mauris ut lectus feugiat."],
+        "instructions": ["Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+                            "Integer eu posuere massa. Mauris ut lectus feugiat,",
+                            " mattis est vel, finibus ligula. Maecenas euismod lacus non pellentesque tempus."],
+        "title": "Best Mock Recipe In The West",
+        "url": "www.mock-example.com"
+    }), 200
 
 
 def run_server():

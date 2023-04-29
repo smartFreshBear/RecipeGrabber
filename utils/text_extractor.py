@@ -9,7 +9,9 @@ import logging
 import html2text
 from flask import current_app
 
+
 from daos.redis_blacklists.timeout_blacklist import increase_timeout_count, in_timeout_blacklist
+
 
 logging.getLogger('text.extractor')
 
@@ -64,8 +66,7 @@ def get_all_text_from_url(url, retries=5):
         return get_all_text_from_url(url, retries)
     except Exception as exc:
         if retries > 0:
-            logging.error("an exception occurred while trying to access url {} trying again \n more details: {}"
-                          .format(url, exc))
+            logging.error("an exception occurred while trying to access url {} trying again \n more details: {}".format(url, exc))
             time.sleep(1)
             retries = retries - 1
             return get_all_text_from_url(url, retries)
