@@ -1,11 +1,16 @@
 import time
 import urllib.request
 import urllib.parse
+from _socket import timeout
+
 from bs4 import BeautifulSoup
 from w3lib.url import safe_url_string
 import logging
 import html2text
 from flask import current_app
+
+
+from daos.redis_blacklists.timeout_blacklist import increase_timeout_count, in_timeout_blacklist
 
 
 logging.getLogger('text.extractor')
@@ -27,9 +32,12 @@ def findTitle(html):
 
 def get_all_text_from_url(url, retries=5):
     time_out_secs = current_app.config['URL_TIMEOUT']
+    if in_timeout_blacklist(url):
+        logging.error("url timed out too many times and have been blocked, try again later.")
+        raise BlockingIOError("The request to this URL has been blocked temporarily")
     if retries == 0:
         logging.error("get_all_text_from_url: could not handle request")
-        raise Exception("could not handle request")
+        raise ValueError("could not handle request")
     try:
         url_utf_8 = safe_url_string(url)
         headers = {'User-Agent': USER_AGENT}
@@ -47,6 +55,15 @@ def get_all_text_from_url(url, retries=5):
         allText = h.handle(html)
 
         return allText, title
+    except timeout as exc:
+        logging.error(
+            "an exception occurred while trying to access url {} trying again \n more details: {}".format(url, exc))
+        time.sleep(1)
+        retries = retries - 1
+        if retries == 0:
+            increase_timeout_count(url)
+            raise timeout("The request to the URL has timed out.")
+        return get_all_text_from_url(url, retries)
     except Exception as exc:
         if retries > 0:
             logging.error("an exception occurred while trying to access url {} trying again \n more details: {}".format(url, exc))
@@ -55,3 +72,4 @@ def get_all_text_from_url(url, retries=5):
             return get_all_text_from_url(url, retries)
         else:
             raise
+
