@@ -1,12 +1,11 @@
-import copy
+
 import logging
 import re
 import threading
-import time
-from pathlib import Path
 
+from pathlib import Path
 import numpy as np
-import pickle5 as pickle
+
 
 import requests_cache
 from tensorflow import keras
@@ -19,7 +18,6 @@ logging.basicConfig(level=logging.DEBUG, format='%(asctime)s:%(levelname)s:%(mes
 logger = logging.getLogger('main_flow')
 stemmer = stemming.StemmerHebrew()
 
-CYCLE_TIME_TO_SAVE_CACHE = 60 * 60
 
 # Cache file names:
 INSTRUCTIONS_MODEL = 'inst_params'
@@ -58,14 +56,6 @@ def loadCache():
     return model_instruction and model_ingredients and top_instru_dict and top_ingri_dict
 
 
-def periodically_save_cache():
-    while True:
-        # Wait for new data to accumulate
-        time.sleep(CYCLE_TIME_TO_SAVE_CACHE)
-
-        # Save to disk
-        with open('../stemming/data.pkl', 'wb') as handle:
-            pickle.dump(from_word_to_stem_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 
 TOP_WORD_NUM = 1500
@@ -298,7 +288,7 @@ def main():
         model_ingredients = train(name_group=INGREDIENTS_MODEL,
                                   test_error_tolerance=0.01)
 
-    caching_thread = threading.Thread(target=periodically_save_cache)
+    caching_thread = threading.Thread(target=stemmer.periodically_save_cache)
     caching_thread.start()
 
 
