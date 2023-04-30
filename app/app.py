@@ -1,6 +1,8 @@
 import logging
 import os
 import sys
+import traceback
+from _socket import timeout
 
 import cherrypy
 from flask import Flask
@@ -32,7 +34,12 @@ logging.info("server is up and running :)")
 
 @app.route('/train')
 def train():
-    return main_flow.main_flow.main()
+    try:
+        return main_flow.main_flow.main()
+    except RuntimeError as exc:
+        traceback.print_exc()
+        print(exc)
+
 
 
 @app.route('/find_recipe_in_text/', methods=['POST'])
@@ -70,11 +77,19 @@ def find_recipe_in_url_window_algo_based():
 
     instructions = request.form['instructions'].lower() == "true"
     ingredients = request.form['ingredients'].lower() == "true"
+    try:
+        all_text, title = text_extractor.get_all_text_from_url(url=url)
+        ingred_paragraph, instr_paragraph = window_key_word_based_algo.extract(ingredients, instructions, all_text)
+        return create_json_response(ingred_paragraph, instr_paragraph, title, url)
+    except BlockingIOError as exc:
+        return jsonify({"error": f"The requests to {url} has been blocked temporarily "
+                                 f"duo to repeated failed attempts."}), 500
+    except ValueError as exc:
+        traceback.print_exc()
+        return jsonify({"error": f"Could not handle request to {url}."}), 500
+    except timeout as exc:
+        return jsonify({"error": f"The request to {url} has timed out."}), 500
 
-    all_text, title = text_extractor.get_all_text_from_url(url=url)
-    ingred_paragraph, instr_paragraph = window_key_word_based_algo.extract(ingredients, instructions, all_text)
-
-    return create_json_response(ingred_paragraph, instr_paragraph, title, url)
 
 @app.route('/populate_training_example_from_url/', methods=['POST'])
 def populate_training_example_from_url():
