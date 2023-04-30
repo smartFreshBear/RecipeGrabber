@@ -1,6 +1,7 @@
 import copy
+import time
 import logging
-import pickle
+import pickle5 as pickle
 import requests
 from json import JSONDecodeError
 import re
@@ -77,6 +78,16 @@ class StemmerHebrew(Stemmer):
     def clean_text(self, text):
         purified_text = re.sub(r'[^\w\s]', '', text)
         return purified_text.split()
+
+    def periodically_save_cache(self):
+        cycle_time_to_save_cache = 60 * 60
+        while True:
+            # Wait for new data to accumulate
+            time.sleep(cycle_time_to_save_cache)
+
+            # Save to disk
+            with open('data.pkl', 'wb') as handle:
+                pickle.dump(from_word_to_stem_cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 
 class StemmerEnglish(Stemmer):
