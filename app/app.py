@@ -10,12 +10,15 @@ from flask import request, jsonify
 from paste.translogger import TransLogger
 
 
+
 print(sys.path.append(os.getcwd()))
 
 from utils import text_extractor
 from apputils import text_prettifer
 import main_flow
 from algorithms import window_key_word_based_algo
+
+from daos.database import DataBase
 from daos.brokenlinks import broken_link_manager
 
 app = Flask(__name__)
@@ -23,7 +26,11 @@ app.config['URL_TIMEOUT'] = 10
 print(os.path.dirname(os.path.realpath(__file__)))
 
 with app.app_context():
-    broken_link_dao = broken_link_manager.BrokenLinkClient(app)
+    db = DataBase(app)
+    db_instance = db.get_db_instance()
+    broken_link_dao = broken_link_manager.BrokenLinkClient(db_instance)
+
+    db_instance.create_all()
 
 main_flow.main_flow.main()
 
@@ -39,7 +46,6 @@ def train():
     except RuntimeError as exc:
         traceback.print_exc()
         print(exc)
-
 
 
 @app.route('/find_recipe_in_text/', methods=['POST'])
