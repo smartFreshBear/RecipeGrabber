@@ -4,12 +4,11 @@ import sys
 import traceback
 from _socket import timeout
 
+from flask_executor import Executor
 import cherrypy
 from flask import Flask
 from flask import request, jsonify
 from paste.translogger import TransLogger
-
-
 
 print(sys.path.append(os.getcwd()))
 
@@ -20,15 +19,22 @@ from algorithms import window_key_word_based_algo
 
 from daos.database import DataBase
 from daos.brokenlinks import broken_link_manager
+from daos.stored_recipes import stored_recipes_manager
 
 app = Flask(__name__)
 app.config['URL_TIMEOUT'] = 10
+app.config['EXECUTOR_TYPE'] = 'thread'
+app.config['EXECUTOR_MAX_WORKERS'] = 2
+
+app.app_context().push()
 print(os.path.dirname(os.path.realpath(__file__)))
+executor = Executor(app)
 
 with app.app_context():
     db = DataBase(app)
     db_instance = db.get_db_instance()
     broken_link_dao = broken_link_manager.BrokenLinkClient(db_instance)
+    stored_recipes_dao = stored_recipes_manager.RecipeService(db_instance)
 
     db_instance.create_all()
 
@@ -80,13 +86,16 @@ def remove_broken_links_by_ids():
 @app.route('/find_recipe_in_url/', methods=['POST'])
 def find_recipe_in_url_window_algo_based():
     url = request.form['url']
-
     instructions = request.form['instructions'].lower() == "true"
     ingredients = request.form['ingredients'].lower() == "true"
     try:
+        if stored_recipes_dao.url_in_db(url):
+            return jsonify(stored_recipes_dao.get_recipe_from_db(url, ingredients, instructions))
         all_text, title = text_extractor.get_all_text_from_url(url=url)
         ingred_paragraph, instr_paragraph = window_key_word_based_algo.extract(ingredients, instructions, all_text)
-        return create_json_response(ingred_paragraph, instr_paragraph, title, url)
+        response = create_json_response(ingred_paragraph, instr_paragraph, title, url)
+        executor.submit(stored_recipes_dao.add_recipe_to_db, response=response)
+        return response
     except BlockingIOError as exc:
         return jsonify({"error": f"The requests to {url} has been blocked temporarily "
                                  f"duo to repeated failed attempts."}), 500
@@ -95,6 +104,9 @@ def find_recipe_in_url_window_algo_based():
         return jsonify({"error": f"Could not handle request to {url}."}), 500
     except timeout as exc:
         return jsonify({"error": f"The request to {url} has timed out."}), 500
+    except TimeoutError as exc:
+        logging.error(traceback.print_exc())
+        return jsonify({"error": "Threading error"}), 500
 
 
 @app.route('/populate_training_example_from_url/', methods=['POST'])
@@ -157,3 +169,5 @@ if __name__ == '__main__':
     # server = gevent.pywsgi.WSGIServer((u'0.0.0.0', 5000), app, handler_class=WebSocketHandler)
     # server.serve_forever()
     run_server()
+
+
