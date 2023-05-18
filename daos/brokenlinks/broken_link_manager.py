@@ -4,7 +4,6 @@ from datetime import datetime
 from sqlite3 import IntegrityError
 
 from flask import jsonify
-from flask_sqlalchemy import SQLAlchemy
 
 
 def define_class(db):
@@ -20,12 +19,8 @@ def define_class(db):
 
 
 class BrokenLinkClient:
-
-    def __init__(self, app):
-        app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///recipeGrabber.sqlite"
-        app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-        self.db = SQLAlchemy(app)
-        self.db.create_all()
+    def __init__(self, db):
+        self.db = db
         self.BrokenLink = define_class(self.db)
 
     def presist_broken_link(self, url, taken_care_of):
