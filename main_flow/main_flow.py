@@ -1,10 +1,8 @@
-
+from vectorizing import vectorizer_heb
 import logging
-import re
 import threading
 
 from pathlib import Path
-import numpy as np
 
 
 import requests_cache
@@ -17,6 +15,7 @@ from stemming import stemming
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s:%(levelname)s:%(message)s')
 logger = logging.getLogger('main_flow')
 stemmer = stemming.StemmerHebrew()
+vectorizer = vectorizer_heb.VectorizerHeb()
 
 
 # Cache file names:
@@ -32,13 +31,13 @@ requests_cache.install_cache(cache_name='hebrew_roots', backend='sqlite', expire
 
 
 def loadCache():
-    global top_instru_dict
-    global top_ingri_dict
+    global top_instruc_dict
+    global top_ingred_dict
     global model_instruction
     global model_ingredients
 
-    top_instru_dict = presistor.load_parameter_cache_from_disk(INSTRUCTIONS_TOP_WORDS)
-    top_ingri_dict = presistor.load_parameter_cache_from_disk(INGREDIENTS_TOP_WORDS)
+    top_instruc_dict = presistor.load_parameter_cache_from_disk(INSTRUCTIONS_TOP_WORDS)
+    top_ingred_dict = presistor.load_parameter_cache_from_disk(INGREDIENTS_TOP_WORDS)
 
     global from_word_to_stem_cache
     from_word_to_stem_cache = stemmer.load_from_word_to_stem()
@@ -53,24 +52,13 @@ def loadCache():
     model_instruction = keras.models.load_model(file_instru)
     model_ingredients = keras.models.load_model(file_ingri)
 
-    return model_instruction and model_ingredients and top_instru_dict and top_ingri_dict
+    return model_instruction and model_ingredients and top_instruc_dict and top_ingred_dict
 
 
 
 
 TOP_WORD_NUM = 1500
 EXTRA_FEATURES_NUM = 14
-
-NEW_LINE_TO_WORD_RATIO_IDX = TOP_WORD_NUM + 1
-QUESTION_MARKS_VALUES_IDX = NEW_LINE_TO_WORD_RATIO_IDX + 1
-EXCLAMATION_MARKS_VALUES_IDX = QUESTION_MARKS_VALUES_IDX + 1
-DOT_MARKS_VALUES_IDX = EXCLAMATION_MARKS_VALUES_IDX + 1
-COMMA_MARKS_VALUES_IDX = DOT_MARKS_VALUES_IDX + 1
-SLASH_MARKS_VALUES_IDX = COMMA_MARKS_VALUES_IDX + 1
-DASH_MARKS_VALUES_IDX = SLASH_MARKS_VALUES_IDX + 1
-PSIKIM_MARKS_VALUES_IDX = DASH_MARKS_VALUES_IDX + 1
-DIGITS_TO_WORDS_RATIO_IDX = PSIKIM_MARKS_VALUES_IDX + 1
-
 FROM_NAME_TO_LABELS = {}
 
 
@@ -93,15 +81,15 @@ def top_words(tables, top_num):
 
     top_instru = list(sort_dic_by_size(instru_dict))[: top_num]
 
-    global top_instru_dict
-    top_instru_dict = {key: instru_dict[key] for key in top_instru}
+    global top_instruc_dict
+    top_instruc_dict = {key: instru_dict[key] for key in top_instru}
 
     top_ingri = list(sort_dic_by_size(ingri_dict))[: top_num]
 
-    global top_ingri_dict
-    top_ingri_dict = {key: ingri_dict[key] for key in top_ingri}
+    global top_ingred_dict
+    top_ingred_dict = {key: ingri_dict[key] for key in top_ingri}
 
-    return top_instru_dict, top_ingri_dict
+    return top_instruc_dict, top_ingred_dict
 
 
 # ;)
@@ -121,101 +109,22 @@ def incr(dic, word):
     dic[word] += 1
 
 
-def vectorized(steamed_table, top_words, index_of_mark):
-    lst_of_top = list(top_words.keys())
-
-    vectorized_table = steamed_table
-    training_set_size = len(vectorized_table)
-    training_examples_matrix = np.zeros((training_set_size, TOP_WORD_NUM + EXTRA_FEATURES_NUM))
-    labels = np.zeros((training_set_size, 1))
-
-    for i in range(1, training_set_size):
-        row = vectorized_table[i]
-        if len(row) == 3:
-            txt = row[0]
-            numed_txt = []
-            for word in txt:
-                if word in lst_of_top:
-                    numed_txt.append(lst_of_top.index(word))
-            labels[i] = steamed_table[i][index_of_mark]
-            training_examples_matrix[i][numed_txt] = 1
-
-    return training_examples_matrix, labels
-
-
-def enrich_count_char_for_index(vectorized_instr, table, index, char):
-    for i in range(len(table)):
-        row = table[i]
-        vectorized_instr[i][index] = (row[0].count(char) / int(row[3]))
-
-
-def enrich_ratio_word_to_numbers(vectorized_instr, table):
-    for i in range(len(table)):
-        row = table[i]
-        amount_of_words = int(row[3])
-        numbers = re.findall(r'\d+', row[0])
-        vectorized_instr[i][DIGITS_TO_WORDS_RATIO_IDX] = count_amount_of_n_digits(numbers, 1) / amount_of_words
-        vectorized_instr[i][DIGITS_TO_WORDS_RATIO_IDX + 1] = count_amount_of_n_digits(numbers, 2) / amount_of_words
-        vectorized_instr[i][DIGITS_TO_WORDS_RATIO_IDX + 2] = count_amount_of_n_digits(numbers, 3) / amount_of_words
-        vectorized_instr[i][DIGITS_TO_WORDS_RATIO_IDX + 3] = count_amount_of_n_digits(numbers, 4) / amount_of_words
-        vectorized_instr[i][DIGITS_TO_WORDS_RATIO_IDX + 4] = count_amount_of_n_digits(numbers, 5) / amount_of_words
-
-
-def count_amount_of_n_digits(numbers, digit_count):
-    return len(list((filter((lambda n: len(n) == digit_count), numbers))))
-
-
 def load_data():
     table = data_loader.training_extractor.load_all_training_examples(False)
-    steamed_dict = stemmer.stemmify(table)
-    top_instruction_words, top_ingredients_words = top_words(steamed_dict, TOP_WORD_NUM)
+    stemmed_dict = stemmer.stemmify(table)
+    top_instruction_words, top_ingredients_words = top_words(stemmed_dict, TOP_WORD_NUM)
 
     # Save dictionaries to disk for caching
     presistor.presist_parameters_to_disk(top_instruction_words, INSTRUCTIONS_TOP_WORDS)
     presistor.presist_parameters_to_disk(top_ingredients_words, INGREDIENTS_TOP_WORDS)
 
-    vectorized_instr, instruction_lbls = vectorized(steamed_dict, top_instruction_words, 2)
-    vectorized_ingrid, ingrid_lbls = vectorized(steamed_dict, top_ingredients_words, 1)
+    vectorized_instr, instruction_lbls = vectorizer.vectorize(stemmed_dict, top_instruction_words, 2)
+    vectorized_ingrid, ingrid_lbls = vectorizer.vectorize(stemmed_dict, top_ingredients_words, 1)
 
-    enrich_tables_vector(table, vectorized_ingrid, vectorized_instr)
+    vectorizer.enrich_tables_vector(table, vectorized_ingrid, vectorized_instr)
 
     FROM_NAME_TO_LABELS[INSTRUCTIONS_MODEL] = [vectorized_instr, instruction_lbls]
     FROM_NAME_TO_LABELS[INGREDIENTS_MODEL] = [vectorized_ingrid, ingrid_lbls]
-
-
-def example_to_vector(txt):
-    steamed_text = stemmer.convert_all_text_to_stem_only(txt)
-    single_row_table_with__stemed_text = [['txt', 'ing', 'instr'], [steamed_text, '0', '0']]
-    single_row_table_with_just_text = [['txt', 'ing', 'instr'], [txt, '0', '0']]
-
-    vectorized_instr, instruction_lbls = vectorized(single_row_table_with__stemed_text, top_instru_dict, 2)
-    vectorized_ingrid, ingrid_lbls = vectorized(single_row_table_with__stemed_text, top_ingri_dict, 1)
-    enrich_tables_vector(single_row_table_with_just_text, vectorized_ingrid, vectorized_instr)
-
-    return vectorized_instr, instruction_lbls, vectorized_ingrid, ingrid_lbls
-
-
-def calculate_amount_of_words(table):
-    for row in table:
-        row.append(len(row[0].split(' ')))
-
-
-def enrich_tables_vector(table, vectorized_ingrid, vectorized_instr):
-    calculate_amount_of_words(table)
-    enrich_vectors(table, vectorized_ingrid)
-    enrich_vectors(table, vectorized_instr)
-
-
-def enrich_vectors(table, vecotrized):
-    enrich_count_char_for_index(vecotrized, table, NEW_LINE_TO_WORD_RATIO_IDX, '\n')
-    enrich_count_char_for_index(vecotrized, table, EXCLAMATION_MARKS_VALUES_IDX, '!')
-    enrich_count_char_for_index(vecotrized, table, QUESTION_MARKS_VALUES_IDX, '?')
-    enrich_count_char_for_index(vecotrized, table, DOT_MARKS_VALUES_IDX, '.')
-    enrich_count_char_for_index(vecotrized, table, COMMA_MARKS_VALUES_IDX, ':')
-    enrich_count_char_for_index(vecotrized, table, SLASH_MARKS_VALUES_IDX, '/')
-    enrich_count_char_for_index(vecotrized, table, DASH_MARKS_VALUES_IDX, '-')
-    enrich_count_char_for_index(vecotrized, table, PSIKIM_MARKS_VALUES_IDX, ',')
-    enrich_ratio_word_to_numbers(vecotrized, table)
 
 
 def train(name_group, test_error_tolerance):
@@ -251,13 +160,13 @@ def create_model():
     return model
 
 
-def predict_ingri_probes(text):
-    _, _, vectorized_ingrid, ingrid_lbls = example_to_vector(text)
-    return predict_vector_with_model(model_ingredients, vectorized_ingrid)
+def predict_ingred_probes(text):
+    _, _, vectorized_ingred, ingred_lbls = vectorizer.example_to_vector(text, top_instruc_dict, top_ingred_dict)
+    return predict_vector_with_model(model_ingredients, vectorized_ingred)
 
 
-def predict_instru_probes(text):
-    vectorized_instr, instruction_lbls, _, _ = example_to_vector(text)
+def predict_instruc_probes(text):
+    vectorized_instr, instruction_lbls, _, _ = vectorizer.example_to_vector(text, top_instruc_dict, top_ingred_dict)
     return predict_vector_with_model(model_instruction, vectorized_instr)
 
 
@@ -274,10 +183,10 @@ def predict_vector_with_model(model, vector):
 
 def main():
     global FROM_NAME_TO_LABELS
-    global parameters_instr
+    global parameters_instruc
     global parameters_ingred
-    global top_instru_dict
-    global top_ingri_dict
+    global top_instruc_dict
+    global top_ingred_dict
     global model_instruction
     global model_ingredients
 
