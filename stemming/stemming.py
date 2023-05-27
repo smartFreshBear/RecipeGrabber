@@ -53,13 +53,13 @@ class StemmerHebrew(Stemmer):
             logging.info("had a problem parsing this row {} \n more info: {}".format(row, jsonExc))
 
     def stemmify(self, table):
-        steamed_table = copy.deepcopy(table)
-        only_text_respective = [row[0] for row in steamed_table]
+        stemmed_table = copy.deepcopy(table)
+        only_text_respective = [row[0] for row in stemmed_table]
         self.prepare_stem_mapping(only_text_respective)
 
-        for row_i in range(len(steamed_table)):
-            steamed_table[row_i][0] = self.convert_all_text_to_stem_only(only_text_respective[row_i])
-        return steamed_table
+        for row_i in range(len(stemmed_table)):
+            stemmed_table[row_i][0] = self.convert_all_text_to_stem_only(only_text_respective[row_i])
+        return stemmed_table
 
     def load_from_word_to_stem(self):
         try:
