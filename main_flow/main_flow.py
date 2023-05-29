@@ -57,8 +57,8 @@ def loadCache():
 
 
 
-TOP_WORD_NUM = 1500
-EXTRA_FEATURES_NUM = 14
+
+
 FROM_NAME_TO_LABELS = {}
 
 
@@ -112,7 +112,7 @@ def incr(dic, word):
 def load_data():
     table = data_loader.training_extractor.load_all_training_examples(False)
     stemmed_dict = stemmer.stemmify(table)
-    top_instruction_words, top_ingredients_words = top_words(stemmed_dict, TOP_WORD_NUM)
+    top_instruction_words, top_ingredients_words = top_words(stemmed_dict, vectorizer.TOP_WORD_NUM)
 
     # Save dictionaries to disk for caching
     presistor.presist_parameters_to_disk(top_instruction_words, INSTRUCTIONS_TOP_WORDS)
@@ -149,7 +149,7 @@ def train(name_group, test_error_tolerance):
 
 def create_model():
     model = keras.models.Sequential()
-    model.add(keras.layers.Dense(TOP_WORD_NUM + EXTRA_FEATURES_NUM, activation="relu"))
+    model.add(keras.layers.Dense(vectorizer.TOP_WORD_NUM + vectorizer.EXTRA_FEATURES_NUM, activation="relu"))
     model.add(keras.layers.Dense(8, activation="relu"))
     model.add(keras.layers.Dense(2, activation="relu"))
     model.add(keras.layers.Dense(1, activation="sigmoid"))

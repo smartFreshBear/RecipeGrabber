@@ -6,9 +6,6 @@ class VectorizerHeb(vectorizer.Vectorizer):
 
     stemmer = stemming.StemmerHebrew()
 
-    def __init__(self):
-        pass
-
     def example_to_vector(self, txt, top_instruc_dict, top_ingred_dict):
         stemmed_text = self.stemmer.convert_all_text_to_stem_only(txt)
         single_row_table_with_stemmed_text = [['txt', 'ing', 'instr'], [stemmed_text, '0', '0']]
