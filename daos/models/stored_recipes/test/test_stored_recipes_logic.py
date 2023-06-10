@@ -4,9 +4,9 @@ import shutil
 import pytest
 from flask import Flask
 
-import recipes_mocks
+from daos.models.stored_recipes.test import recipes_mocks
 from daos.database import DataBase
-from daos.stored_recipes import stored_recipes_manager
+from services.broken_links_service import ServicesManager
 
 
 @pytest.fixture(scope='package')
@@ -15,9 +15,7 @@ def recipes_dao():
 	with app.app_context():
 		db = DataBase(app)
 		db_instance = db.get_db_instance()
-		recipes_dao = stored_recipes_manager.RecipeService(
-				db_instance
-				)
+		recipes_dao = ServicesManager(db_instance)
 		db_instance.create_all()
 		yield recipes_dao
 
@@ -25,7 +23,7 @@ def recipes_dao():
 def cleanup():
 	current_dir = os.path.dirname(os.path.abspath(__file__))
 	directory_to_delete = os.path.join(
-			current_dir, 'instance'
+			current_dir, '../instance'
 			)
 
 	shutil.rmtree(directory_to_delete)
