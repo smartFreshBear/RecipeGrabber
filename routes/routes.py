@@ -9,12 +9,11 @@ api_bp = Blueprint('api_bp', __name__)
 
 
 class Routes:
-    def __init__(self, db, executor):
+    def __init__(self, db, executor, redis):
         self.training_service = TrainingService()
         self.en_text_extractor_service = EnglishTextExtractorService()
-        self.text_extractor_service = TextExtractorService(db, executor)
+        self.text_extractor_service = TextExtractorService(db, executor, redis)
         self.broken_links_service = BrokenLinkService(db)
-
         self.register_routes()
 
     def register_routes(self):
