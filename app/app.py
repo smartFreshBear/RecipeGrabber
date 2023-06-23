@@ -8,6 +8,7 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from paste.translogger import TransLogger
 
+from daos.caching_manager import CachingManager
 from routes.routes import api_bp, Routes
 import main_flow
 
@@ -25,10 +26,11 @@ app.app_context().push()
 print(os.path.dirname(os.path.realpath(__file__)))
 db = SQLAlchemy(app)
 executor = Executor(app)
+caching_manager = CachingManager()
 
 
 with app.app_context():
-    routes = Routes(db, executor)
+    routes = Routes(db, executor, caching_manager)
     app.register_blueprint(api_bp)
     db.create_all()
 
