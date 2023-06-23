@@ -10,7 +10,7 @@ import html2text
 from flask import current_app
 
 
-from daos.redis_blacklists.timeout_blacklist import increase_timeout_count, in_timeout_blacklist
+from services.timeout_blacklist_service import increase_timeout_count, in_timeout_blacklist
 
 
 logging.getLogger('text.extractor')
@@ -30,9 +30,9 @@ def findTitle(html):
         return title_error_message
 
 
-def get_all_text_from_url(url, retries=5):
+def get_all_text_from_url(url, caching_manager, retries=5):
     time_out_secs = current_app.config['URL_TIMEOUT']
-    if in_timeout_blacklist(url):
+    if in_timeout_blacklist(url, caching_manager):
         logging.error("url timed out too many times and have been blocked, try again later.")
         raise BlockingIOError("The request to this URL has been blocked temporarily")
     if retries == 0:
@@ -61,15 +61,15 @@ def get_all_text_from_url(url, retries=5):
         time.sleep(1)
         retries = retries - 1
         if retries == 0:
-            increase_timeout_count(url)
+            increase_timeout_count(url, caching_manager)
             raise timeout("The request to the URL has timed out.")
-        return get_all_text_from_url(url, retries)
+        return get_all_text_from_url(url, caching_manager, retries)
     except Exception as exc:
         if retries > 0:
             logging.error("an exception occurred while trying to access url {} trying again \n more details: {}".format(url, exc))
             time.sleep(1)
             retries = retries - 1
-            return get_all_text_from_url(url, retries)
+            return get_all_text_from_url(url, caching_manager, retries)
         else:
             raise
 

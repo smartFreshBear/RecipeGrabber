@@ -28,7 +28,7 @@ class TextExtractorService:
                 self.caching_manager.cache_url(key=url, value=json.dumps(recipe), name="frequently_used_recipes")
                 return jsonify(recipe)
 
-            all_text, title = text_extractor.get_all_text_from_url(url=url, redis=self.caching_manager)
+            all_text, title = text_extractor.get_all_text_from_url(url=url, caching_manager=self.caching_manager)
             ingred_paragraph, instr_paragraph = window_key_word_based_algo.extract(ingredients, instructions, all_text)
             response = self.create_json_response(ingred_paragraph, instr_paragraph, title, url)
 
