@@ -18,7 +18,10 @@ app = Flask(__name__)
 app.config['URL_TIMEOUT'] = 10
 app.config['EXECUTOR_TYPE'] = 'thread'
 app.config['EXECUTOR_MAX_WORKERS'] = 2
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///recipeGrabber.sqlite"
+app.config["SQLALCHEMY_DATABASE_URI"] = "postgresql://dbmasteruser:" \
+                                        "l.U#y~=tB0xs2zN#Q;)hCE.1ZIS.G`+9@" \
+                                        "ls-23bc206af3dbbe34ba3f198edb122c9e62997b6a." \
+                                        "cquspxp4zetb.eu-central-1.rds.amazonaws.com/playground"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 app.app_context().push()
