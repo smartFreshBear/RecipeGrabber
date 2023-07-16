@@ -30,6 +30,8 @@ HEBREW_NLP_END_POINT = 'https://hebrew-nlp.co.il/service/morphology/normalize'
 requests_cache.install_cache(cache_name='hebrew_roots', backend='sqlite', expire_after=60 * 60 * 24 * 100)
 
 
+# This method tries to load data from the cache (like pre-trained models and top dictionaries).
+# If it doesn't find this data in the cache, it returns NONE, that means needs to be reloaded.
 def loadCache():
     global top_instruc_dict
     global top_ingred_dict
