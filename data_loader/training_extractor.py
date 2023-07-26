@@ -38,6 +38,20 @@ def request_to_get_spreadsheet_values():
     return values
 
 
+def request_to_append_spreadsheet_values(values, from_cell, to_cell):
+    resource = get_values_resource()
+    body = {
+        'values': values
+    }
+    request = resource.append(spreadsheetId=TEST_INSERT_SPREADSHEET_ID,
+                              range='{}:{}'.format(from_cell, to_cell),
+                              valueInputOption='RAW',
+                              insertDataOption='OVERWRITE',
+                              body=body)
+
+    return request
+
+
 def load_all_training_examples(should_print=False, ignore_un_tagged=True):
     # service = get_clinet_to_training_set()
     #
@@ -77,3 +91,16 @@ def get_clinet_to_training_set():
             pickle.dump(creds, token)
     service = build('sheets', 'v4', credentials=creds)
     return service
+
+
+def insert_data_to_training(cells_list, from_cell, to_cell):
+    def from_cell_row_str_row(row):
+        return list(map(lambda c: c.text, row))
+
+    rows = list(map(from_cell_row_str_row, cells_list))
+
+    request = request_to_append_spreadsheet_values(rows, from_cell, to_cell)
+
+    response = request.execute()
+
+    return response is not None
