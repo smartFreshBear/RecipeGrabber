@@ -1,23 +1,19 @@
+from daos.caching_manager import CachingManager
 from utils import text_extractor
-import validators
-from unittest import TestCase
-
 SIZE_OF_TRAINING_EXAMPLE = 5
 
-
-class WebsiteIterator:
+class TrainingPopulation:
     def __init__(self, url):
         self.url = url
-        self.content = self.get_website_text()
+        self.content = self.get_website_text(url)
         self.index = 0
         self.content_length = len(self.content)
 
-    def get_website_text(self):
+    @staticmethod
+    def get_website_text(url):
         all_text = ''
-        if self.is_website_url(self.url):
-            all_text, title = text_extractor.get_all_text_from_url(self.url)
-        else:
-            all_text = self.url
+        caching_manager = CachingManager()
+        all_text = text_extractor.get_all_text_from_url(url, caching_manager)
         return all_text
 
     def next(self):
@@ -32,18 +28,5 @@ class WebsiteIterator:
             self.index += SIZE_OF_TRAINING_EXAMPLE
             return result
 
-    def is_website_url(self, url):
-        if validators.url(url):
-            parsed_url = validators.url(url)
-            if parsed_url.scheme in ['http', 'https'] and parsed_url.hostname:
-                return True
-        return False
-
-
 def get_iterator_for_website(url):
-    return WebsiteIterator(url)
-
-
-
-
-
+    return TrainingPopulation(url)
