@@ -14,9 +14,13 @@ import main_flow
 
 print(sys.path.append(os.getcwd()))
 
-app = Flask(__name__)
-app.config.from_pyfile("config.py")
 
+app = Flask(__name__)
+app.config['URL_TIMEOUT'] = 10
+app.config['EXECUTOR_TYPE'] = 'thread'
+app.config['EXECUTOR_MAX_WORKERS'] = 2
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///recipeGrabber.sqlite"
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 app.app_context().push()
 print(os.path.dirname(os.path.realpath(__file__)))
