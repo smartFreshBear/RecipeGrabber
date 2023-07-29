@@ -23,7 +23,7 @@ training_extractor_logger = create_logger_instance('Training_Extractor')
 
 
 def get_values_resource():
-    service = get_clinet_to_training_set()
+    service = get_client_to_training_set()
     sheet = service.spreadsheets()
     values = sheet.values()
 
@@ -33,7 +33,7 @@ def get_values_resource():
 def request_to_get_spreadsheet_values():
     resource = get_values_resource()
     result = resource.get(spreadsheetId=SAMPLE_SPREADSHEET_ID,
-                              range=SAMPLE_RANGE_NAME).execute()
+                          range=SAMPLE_RANGE_NAME).execute()
     values = result.get('values', [])
     return values
 
@@ -52,29 +52,7 @@ def request_to_append_spreadsheet_values(values, from_cell, to_cell):
     return request
 
 
-def load_all_training_examples(should_print=False, ignore_un_tagged=True):
-    # service = get_clinet_to_training_set()
-    #
-    # # Call the Sheets API
-    # sheet = service.spreadsheets()
-    # result = sheet_values.get(spreadsheetId=SAMPLE_SPREADSHEET_ID,
-    #                           range=SAMPLE_RANGE_NAME).execute()
-    # values = result.get('values', [])
-
-    values = request_to_get_spreadsheet_values()
-
-    if not values:
-        training_extractor_logger.info('No data found.')
-    elif should_print:
-        for row in values:
-            if len(row) == 3:
-                training_extractor_logger.info('%s, %s, %s \n' % (row[0], row[1], row[2]))
-    if ignore_un_tagged:
-        return [v for v in values if len(v) == 3 and v[1] != '?' and v[2] != '?']
-    return values
-
-
-def get_clinet_to_training_set():
+def get_client_to_training_set():
     creds = None
     # The file token.pickle stores the user's access and refresh tokens, and is
     # created automatically when the authorization flow completes for the first
@@ -91,16 +69,3 @@ def get_clinet_to_training_set():
             pickle.dump(creds, token)
     service = build('sheets', 'v4', credentials=creds)
     return service
-
-
-def insert_data_to_training(cells_list, from_cell, to_cell):
-    def from_cell_row_str_row(row):
-        return list(map(lambda c: c.text, row))
-
-    rows = list(map(from_cell_row_str_row, cells_list))
-
-    request = request_to_append_spreadsheet_values(rows, from_cell, to_cell)
-
-    response = request.execute()
-
-    return response is not None
