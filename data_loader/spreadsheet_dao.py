@@ -13,7 +13,6 @@ SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
 
 # The ID and range of a sample spreadsheet.
 SAMPLE_SPREADSHEET_ID = '1NGRUyzImlaUd-UrTkNXSd1JB7OOHnw6e1h4AohRXFK8'
-TEST_INSERT_SPREADSHEET_ID = '1KQ2nFO9oeDLhHmKh9UTvNnhepKhMuTOyKmh7Nnxbj80'
 
 SAMPLE_RANGE_NAME = 'A:C'
 
@@ -57,13 +56,13 @@ def request_to_get_spreadsheet_values():
     return values
 
 
-def request_to_append_spreadsheet_values(values, from_cell, to_cell):
+def request_to_append_spreadsheet_values(values, target_spreadsheet):
     resource = get_values_resource()
     body = {
         'values': values
     }
-    request = resource.append(spreadsheetId=TEST_INSERT_SPREADSHEET_ID,
-                              range='{}:{}'.format(from_cell, to_cell),
+    request = resource.append(spreadsheetId=target_spreadsheet,
+                              range=SAMPLE_RANGE_NAME,
                               valueInputOption='RAW',
                               insertDataOption='OVERWRITE',
                               body=body)
