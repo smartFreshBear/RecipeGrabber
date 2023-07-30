@@ -17,13 +17,8 @@ def get_values(should_print=False, ignore_un_tagged=True):
     return values
 
 
-def insert_values(cells_list, from_cell, to_cell):
-    def from_cell_row_str_row(row):
-        return list(map(lambda c: c.text, row))
-
-    rows = list(map(from_cell_row_str_row, cells_list))
-
-    request = request_to_append_spreadsheet_values(rows, from_cell, to_cell)
+def insert_values(cells_list, target_spreadsheet):
+    request = request_to_append_spreadsheet_values(cells_list, target_spreadsheet)
 
     response = request.execute()
 
