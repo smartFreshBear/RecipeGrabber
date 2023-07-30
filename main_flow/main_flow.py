@@ -166,7 +166,7 @@ def count_amount_of_n_digits(numbers, digit_count):
 
 
 def load_data():
-    table = data_loader.training_extractor.load_all_training_examples(False)
+    table = data_loader.training_storer.get_values(False)
     steamed_dict = stemmer.stemmify(table)
     top_instruction_words, top_ingredients_words = top_words(steamed_dict, TOP_WORD_NUM)
 

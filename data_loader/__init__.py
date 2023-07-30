@@ -1,1 +1,1 @@
-from . import training_extractor
+from . import training_storer

@@ -1,9 +1,9 @@
 import logging
 
-from data_loader.training_extractor import *
+from data_loader.spreadsheet_dao import *
 
 
-def load_all_training_examples(should_print=False, ignore_un_tagged=True):
+def get_values(should_print=False, ignore_un_tagged=True):
     values = request_to_get_spreadsheet_values()
 
     if not values:
@@ -17,7 +17,7 @@ def load_all_training_examples(should_print=False, ignore_un_tagged=True):
     return values
 
 
-def insert_data_to_training(cells_list, from_cell, to_cell):
+def insert_values(cells_list, from_cell, to_cell):
     def from_cell_row_str_row(row):
         return list(map(lambda c: c.text, row))
 
