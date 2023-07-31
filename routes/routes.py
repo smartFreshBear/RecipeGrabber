@@ -1,5 +1,6 @@
 from flask import Blueprint, request
 
+from services.user_service import UserService
 from services.broken_links_service import BrokenLinkService
 from services.en_text_extractor_service import EnglishTextExtractorService
 from services.text_extractor_service import TextExtractorService
@@ -14,6 +15,7 @@ class Routes:
         self.en_text_extractor_service = EnglishTextExtractorService()
         self.text_extractor_service = TextExtractorService(db, executor, caching_manager)
         self.broken_links_service = BrokenLinkService(db)
+        self.user_service = UserService(db)
         self.register_routes()
 
     def register_routes(self):
