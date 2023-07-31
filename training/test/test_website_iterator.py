@@ -12,19 +12,10 @@ class TestWebsiteIterator(unittest.TestCase):
                                    'Line5a Line5b. Line5c, Line5d, Line5e Line5f.\n'
         self.mocked_lines = self.mocked_website_text.splitlines()
 
-    def test_get_website_text(self):
-            with patch('training.website_iterator.text_extractor.get_all_text_from_url') as mock_get_all_text:
-                mock_get_all_text.return_value = self.mocked_website_text
-                result = WebsiteIterator.get_website_text(self.url)
-                self.assertEqual(result, self.mocked_website_text)
-                mock_get_all_text.assert_called_once_with(self.url)
-
     def test_next_full_content(self):
-        with patch('training.website_iterator.WebsiteIterator.get_website_text') as mock_get_website_text:
-            mock_get_website_text.return_value = self.mocked_website_text
+        with patch('utils.text_extractor.get_all_text_from_url') as mock_get_all_text:
+            mock_get_all_text.return_value = self.mocked_website_text
             iterator = WebsiteIterator.get_iterator_for_website(self.url)
-            iterator.content = self.mocked_website_text
-            iterator.content_length = len(self.mocked_website_text)
             result = iterator.next()
             expected_result = [self.mocked_lines[0], self.mocked_lines[1],self.mocked_lines[2],self.mocked_lines[3],self.mocked_lines[4]]
             self.assertEqual(result, expected_result)
@@ -35,11 +26,9 @@ class TestWebsiteIterator(unittest.TestCase):
     def test_next_partial_content(self):
         self.mocked_website_text = "\n".join(self.mocked_lines[:3])
 
-        with patch('training.website_iterator.WebsiteIterator.get_website_text') as mock_get_website_text:
+        with patch('utils.text_extractor.get_all_text_from_url') as mock_get_website_text:
             mock_get_website_text.return_value = self.mocked_website_text
             iterator = WebsiteIterator.get_iterator_for_website(self.url)
-            iterator.content = self.mocked_website_text
-            iterator.content_length = len(self.mocked_website_text)
             result = iterator.next()
             self.assertEqual(result, [self.mocked_lines[0], self.mocked_lines[1], self.mocked_lines[2]])
 
@@ -48,11 +37,9 @@ class TestWebsiteIterator(unittest.TestCase):
 
     def test_next_one_line_content(self):
         self.mocked_website_text = "\n".join(self.mocked_lines[:1])
-        with patch('training.website_iterator.WebsiteIterator.get_website_text') as mock_get_website_text:
+        with patch('utils.text_extractor.get_all_text_from_url') as mock_get_website_text:
             mock_get_website_text.return_value = self.mocked_website_text
             iterator = WebsiteIterator.get_iterator_for_website(self.url)
-            iterator.content = self.mocked_website_text
-            iterator.content_length = len(self.mocked_website_text)
             result = iterator.next()
             expected_result = [self.mocked_lines[0]]
             self.assertEqual(result, expected_result)
@@ -62,12 +49,9 @@ class TestWebsiteIterator(unittest.TestCase):
 
     def test_next_empty_content(self):
         self.mocked_website_text = ''
-        with patch('training.website_iterator.WebsiteIterator.get_website_text') as mock_get_website_text:
+        with patch('utils.text_extractor.get_all_text_from_url') as mock_get_website_text:
             mock_get_website_text.return_value = self.mocked_website_text
             iterator = WebsiteIterator.get_iterator_for_website(self.url)
-            iterator.content = self.mocked_website_text
-            iterator.content_length = len(self.mocked_website_text)
-
             with self.assertRaises(StopIteration):
                 iterator.next()
 
