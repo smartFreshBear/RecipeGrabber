@@ -43,9 +43,6 @@ app_logger = create_logger_instance('App')
 app_logger.info("server is up and running :)")
 
 
-
-
-
 def run_server():
     # Enable WSGI access logging via Paste
     app_logged = TransLogger(app)

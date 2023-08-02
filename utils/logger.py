@@ -26,7 +26,10 @@ class CustomFormatter(logging.Formatter):
 
 def create_logger_instance(name):
     logger = logging.getLogger(name)
+
+    logger.propagate = 0
     logger.setLevel(logging.DEBUG)
+
     logger_handler = logging.StreamHandler()
     logger_handler.setLevel(logging.DEBUG)
     logger.addHandler(logger_handler)
