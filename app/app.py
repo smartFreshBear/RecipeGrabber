@@ -1,4 +1,3 @@
-import logging
 import os
 import sys
 
@@ -11,6 +10,7 @@ from paste.translogger import TransLogger
 from daos.caching_manager import CachingManager
 from routes.routes import api_bp, Routes
 import main_flow
+from utils.logger import create_logger_instance
 
 print(sys.path.append(os.getcwd()))
 
@@ -39,7 +39,8 @@ main_flow.main_flow.main()
 
 STATIC_URL = "/static/"
 
-logging.info("server is up and running :)")
+app_logger = create_logger_instance('App')
+app_logger.info("server is up and running :)")
 
 
 

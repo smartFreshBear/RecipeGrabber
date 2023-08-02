@@ -1,11 +1,12 @@
 from __future__ import print_function
 
-import logging
 import os.path
 import pickle
 
 from google.auth.transport.requests import Request
 from googleapiclient.discovery import build
+
+from utils.logger import create_logger_instance
 
 # If modifying these scopes, delete the file token.pickle.
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
@@ -14,6 +15,8 @@ SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
 SAMPLE_SPREADSHEET_ID = '1NGRUyzImlaUd-UrTkNXSd1JB7OOHnw6e1h4AohRXFK8'
 
 SAMPLE_RANGE_NAME = 'A:C'
+
+training_extractor_logger = create_logger_instance('Training_Extractor')
 
 """ TODO address + sheets from training set"""
 
@@ -28,11 +31,11 @@ def load_all_training_examples(should_print=False, ignore_un_tagged=True):
     values = result.get('values', [])
 
     if not values:
-        logging.info('No data found.')
+        training_extractor_logger.info('No data found.')
     elif should_print:
         for row in values:
             if len(row) == 3:
-                logging.info('%s, %s, %s \n' % (row[0], row[1], row[2]))
+                training_extractor_logger.info('%s, %s, %s \n' % (row[0], row[1], row[2]))
     if ignore_un_tagged:
         return [v for v in values if len(v) == 3 and v[1] != '?' and v[2] != '?']
     return values

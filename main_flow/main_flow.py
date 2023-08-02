@@ -1,5 +1,3 @@
-
-import logging
 import re
 import threading
 
@@ -12,10 +10,10 @@ from tensorflow import keras
 import data_loader
 from training import training_test_cv_divider
 from utils import presistor
+from utils.logger import create_logger_instance
 from stemming import stemming
 
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s:%(levelname)s:%(message)s')
-logger = logging.getLogger('main_flow')
+main_flow_logger = create_logger_instance('Main_Flow')
 stemmer = stemming.StemmerHebrew()
 
 
@@ -49,13 +47,11 @@ def loadCache():
     if not (Path(file_instru).is_dir() and Path(file_ingri).is_dir()):
         return None
 
-    logging.info('loading cache')
+    main_flow_logger.info('loading cache')
     model_instruction = keras.models.load_model(file_instru)
     model_ingredients = keras.models.load_model(file_ingri)
 
     return model_instruction and model_ingredients and top_instru_dict and top_ingri_dict
-
-
 
 
 TOP_WORD_NUM = 1500
@@ -266,7 +262,7 @@ def predict_vector_with_model(model, vector):
         ans = model(vector)
         ans = ans[1][0]
     except Exception as e:
-        logger.error(f'error has occurred during prediction, {e}')
+        main_flow_logger.error(f'error has occurred during prediction, {e}')
         raise e
 
     return ans
