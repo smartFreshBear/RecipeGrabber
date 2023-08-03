@@ -14,12 +14,12 @@ FROM_TYPE_TO_DEFS = {
     INSTRUCTIONS: {
         'ACCEPTANCE_BENCHMARK': ACCEPTANCE_BENCHMARK_INSTRU,
         'WINDOW_SIZE': WINDOW_SIZE_INSTRUCT,
-        'CLASSIFIER': main_flow.main_flow.predict_instru_probes
+        'CLASSIFIER': main_flow.main_flow.predict_instruc_probes
     },
     INGREDIENTS: {
         'ACCEPTANCE_BENCHMARK': ACCEPTANCE_BENCHMARK_INGRID,
         'WINDOW_SIZE': WINDOW_SIZE_INGRID,
-        'CLASSIFIER': main_flow.main_flow.predict_ingri_probes
+        'CLASSIFIER': main_flow.main_flow.predict_ingred_probes
     }
 }
 
@@ -29,11 +29,11 @@ def get_paragraph_from_indexes(first_line, last_line, lines_of_text):
 
 
 def is_window_valid_ingred(text_window):
-    return ACCEPTANCE_BENCHMARK_INGRID < main_flow.main_flow.predict_ingri_probes('\n'.join(text_window))
+    return ACCEPTANCE_BENCHMARK_INGRID < main_flow.main_flow.predict_ingred_probes('\n'.join(text_window))
 
 
 def is_window_valid_instr(text_window):
-    return ACCEPTANCE_BENCHMARK_INSTRU < main_flow.main_flow.predict_instru_probes('\n'.join(text_window))
+    return ACCEPTANCE_BENCHMARK_INSTRU < main_flow.main_flow.predict_instruc_probes('\n'.join(text_window))
 
 
 def is_window_valid(text_window, type):
