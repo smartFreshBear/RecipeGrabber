@@ -46,6 +46,7 @@ def get_values_resource():
     return values
 
 
+def get_spreadsheet_values():
 def get_spreadsheet_values(cells_range=SAMPLE_RANGE_NAME, target_spreadsheet=SAMPLE_SPREADSHEET_ID):
     resource = get_values_resource()
     response = resource.get(spreadsheetId=target_spreadsheet,
@@ -53,6 +54,7 @@ def get_spreadsheet_values(cells_range=SAMPLE_RANGE_NAME, target_spreadsheet=SAM
     return response
 
 
+def append_spreadsheet_values(values, target_spreadsheet):
 def append_spreadsheet_values(values, cells_range=SAMPLE_RANGE_NAME, target_spreadsheet=SAMPLE_SPREADSHEET_ID):
     resource = get_values_resource()
     body = {
