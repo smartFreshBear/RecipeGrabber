@@ -4,7 +4,7 @@ from data_loader.spreadsheet_dao import *
 
 
 def get_values(should_print=False, ignore_un_tagged=True):
-    values = request_to_get_spreadsheet_values()
+    values = get_spreadsheet_values()
 
     if not values:
         logging.info('No data found.')
@@ -18,7 +18,7 @@ def get_values(should_print=False, ignore_un_tagged=True):
 
 
 def insert_values(cells_list, target_spreadsheet):
-    request = request_to_append_spreadsheet_values(cells_list, target_spreadsheet)
+    request = append_spreadsheet_values(cells_list, target_spreadsheet)
 
     response = request.execute()
 

@@ -14,8 +14,6 @@ SAMPLE_SPREADSHEET_ID = '1NGRUyzImlaUd-UrTkNXSd1JB7OOHnw6e1h4AohRXFK8'
 
 SAMPLE_RANGE_NAME = 'A:C'
 
-""" TODO address + sheets from training set"""
-
 
 def get_client_to_training_set():
     creds = None
@@ -44,7 +42,7 @@ def get_values_resource():
     return values
 
 
-def request_to_get_spreadsheet_values():
+def get_spreadsheet_values():
     resource = get_values_resource()
     result = resource.get(spreadsheetId=SAMPLE_SPREADSHEET_ID,
                           range=SAMPLE_RANGE_NAME).execute()
@@ -52,7 +50,7 @@ def request_to_get_spreadsheet_values():
     return values
 
 
-def request_to_append_spreadsheet_values(values, target_spreadsheet):
+def append_spreadsheet_values(values, target_spreadsheet):
     resource = get_values_resource()
     body = {
         'values': values
