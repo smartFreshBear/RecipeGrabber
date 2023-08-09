@@ -1,7 +1,7 @@
 import copy
 import time
 import logging
-import pickle5 as pickle
+import pickle
 import requests
 from json import JSONDecodeError
 import re
