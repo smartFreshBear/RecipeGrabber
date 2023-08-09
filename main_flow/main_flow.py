@@ -105,8 +105,8 @@ def incr(dic, word):
 
 
 def load_data():
-    table = data_loader.training_extractor.load_all_training_examples(False)
-    stemmed_dict = stemmer.stemmify(table)
+    table = data_loader.training_storer.get_values(False)
+    steamed_dict = stemmer.stemmify(table)
     top_instruction_words, top_ingredients_words = top_words(stemmed_dict, vectorizer.TOP_WORD_NUM)
 
     # Save dictionaries to disk for caching
