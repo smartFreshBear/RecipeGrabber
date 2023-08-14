@@ -1,80 +1,61 @@
-import logging
-from sqlite3 import IntegrityError
+
 
 from daos.models.stored_recipes.stored_recipes_model import define_stored_recipe
+from packages.recipesql.utils.errors import UniqueError
 
 
 class StoredRecipesService:
-    def __init__(self, db):
-        self.db = db
-        self.StoredRecipe = define_stored_recipe(self.db)
+    def __init__(self, crud):
+        self.crud = crud
+        self.StoredRecipe = define_stored_recipe(crud.db)
 
-    def add_recipe_to_db(self, **kwargs):
-        response = kwargs.get("response")
-        if response is None:
-            return
+    def add_recipe_to_db(self, **kwargs: dict):
         try:
-            if self.url_in_db(response['url']):
-                return
+            response = kwargs.get("response", {"empty": None})
+            if "empty" in response:
+                raise ValueError
 
-            requested_url = self.StoredRecipe(
-                url=response.get("url").strip(),
-                title=response.get("title"),
-                ingredients=response.get("ingredients"),
-                instructions=response.get("instructions")
-            )
-            self.db.session.add(requested_url)
-            self.db.session.commit()
-            requested_recipe = self.db.session.query(self.StoredRecipe). \
-                filter_by(url=response.get("url").strip()).first()
-            logging.info(
-                "new recipe stored:\n{}".format(requested_recipe)
-            )
-        except IntegrityError:
-            logging.error(
-                "{} url key already inserted".format(response.get("url"))
-            )
-        except (TypeError, AttributeError):
-            logging.error(
-                "The following input parameter was invalid:\n{}"
-                .format(response)
-            )
-
-    def url_in_db(self, url):
-        requested_url = self.db.session.query(self.StoredRecipe).filter_by(
-            url=url.strip()
-        ).first()
-        return requested_url is not None
+            return self.crud.save_one(self.StoredRecipe(
+                url=response.get("url","N/A").strip(),
+                title=response.get("title",""),
+                ingredients=response.get("ingredients",[]),
+                instructions=response.get("instructions",[])
+            ))
+        except UniqueError:
+            return
+        except Exception as exc:
+            return exc
 
     def get_recipe_from_db(self, url, ingredients=True, instructions=True):
-        if not self.url_in_db(url):
-            logging.error(
-                "URL does not exists in database."
-            )
-            raise ValueError
+        try:
+            requested_url = self.crud.find_one(self.StoredRecipe(
+                                                    url=url.strip(),
+                                                    title="")
+                                                )
 
-        requested_url = self.db.session.query(self.StoredRecipe). \
-            filter_by(url=url.strip()).first()
+            json_response = {
+                "url": url.strip(),
+                "title": requested_url.title,
+                "ingredients": [],
+                "instructions": []
+            }
+            if ingredients:
+                json_response["ingredients"] = requested_url.ingredients
 
-        json_response = {
-            "url": url,
-            "title": requested_url.title,
-            "ingredients": [],
-            "instructions": []
-        }
-        if ingredients:
-            json_response["ingredients"] = requested_url.ingredients
+            if instructions:
+                json_response["instructions"] = requested_url.instructions
 
-        if instructions:
-            json_response["instructions"] = requested_url.instructions
-
-        return json_response
-
-    def delete_recipe_from_db(self, url, ):
-        if not self.url_in_db(url):
-            logging.info("Could not delete. URL is not in the database.")
+            return json_response
+        except UniqueError:
             return
-        requested_url = self.db.session.query(self.StoredRecipe). \
-            filter_by(url=url.strip()).first()
-        self.db.session.delete(requested_url)
-        self.db.session.commit()
+        except Exception as exc:
+            raise exc
+
+    def delete_recipe_from_db(self, url):
+        try:
+            self.crud.delete_one(self.StoredRecipe(
+                                            url=url.strip(),
+                                            title="")
+                                        )
+        except Exception as exc:
+            raise exc

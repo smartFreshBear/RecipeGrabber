@@ -8,6 +8,7 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from paste.translogger import TransLogger
 
+from packages.recipesql import CrudSQL
 from daos.caching_manager import CachingManager
 from routes.routes import api_bp, Routes
 import main_flow
@@ -26,9 +27,10 @@ caching_manager = CachingManager()
 
 
 with app.app_context():
-    routes = Routes(db, executor, caching_manager)
+    crud = CrudSQL(db)
+    routes = Routes(crud, executor, caching_manager)
     app.register_blueprint(api_bp)
-    db.create_all()
+
 
 
 main_flow.main_flow.main()
