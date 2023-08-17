@@ -1,6 +1,7 @@
-import logging
-
+from utils.logger import create_logger_instance
 from data_loader.spreadsheet_dao import *
+
+training_storer_logger = create_logger_instance('Training_Storer')
 
 
 def get_values(should_print=False, ignore_un_tagged=True, cells_range=None, target_spreadsheet=None):
@@ -12,11 +13,11 @@ def get_values(should_print=False, ignore_un_tagged=True, cells_range=None, targ
     values = response.get('values', [])
 
     if not values:
-        logging.info('No data found.')
+        training_storer_logger.info('No data found.')
     elif should_print:
         for row in values:
             if len(row) == 3:
-                logging.info('%s, %s, %s \n' % (row[0], row[1], row[2]))
+                training_storer_logger.info('%s, %s, %s \n' % (row[0], row[1], row[2]))
     if ignore_un_tagged:
         return [v for v in values if len(v) == 3 and v[1] != '?' and v[2] != '?']
     return values

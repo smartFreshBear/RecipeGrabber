@@ -1,4 +1,4 @@
-import re
+from vectorizing import vectorizer_heb
 import threading
 
 from pathlib import Path
