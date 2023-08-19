@@ -1,6 +1,8 @@
-import logging
+from utils.logger import create_logger_instance
 
 import redis
+
+caching_manager_logger = create_logger_instance('Caching_Manager')
 
 
 class CachingManager:
@@ -11,20 +13,20 @@ class CachingManager:
     def cache_url(self, key, value=None, name=None, time=None):
         if name is None:
             if self.redis.setex(key, time=time, value=value):
-                logging.info(
+                caching_manager_logger.info(
                     "Successfully cached url:\n{}".format(key)
                 )
             else:
-                logging.error(
+                caching_manager_logger.error(
                     "failed caching url:\n{}".format(key)
                 )
         else:
             if self.redis.hset(name=name, key=key, value=value):
-                logging.info(
+                caching_manager_logger.info(
                     "cached data from url:\n{}".format(key)
                 )
             else:
-                logging.error(
+                caching_manager_logger.error(
                     "failed caching data from url:\n{}".format(key)
                 )
 
