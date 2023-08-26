@@ -19,5 +19,7 @@ class SiteCapture:
         except StopIteration:
             pass
 
-        training_storer.insert_values(cells_list, target_spreadsheet=TEST_SPREADSHEET_ID)
+        reformatted_list = list(map(lambda x: ['\n'.join(x)], cells_list))
+
+        training_storer.insert_values(reformatted_list, target_spreadsheet=TEST_SPREADSHEET_ID)
         return len(cells_list)
