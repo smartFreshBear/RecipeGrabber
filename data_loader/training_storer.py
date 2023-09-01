@@ -18,8 +18,8 @@ def get_values(should_print=False, ignore_un_tagged=True, cells_range=None, targ
         for row in values:
             if len(row) == 3:
                 training_storer_logger.info('%s, %s, %s \n' % (row[0], row[1], row[2]))
-    if ignore_un_tagged:
-        return [v for v in values if len(v) == 3 and v[1] != '?' and v[2] != '?']
+    #if ignore_un_tagged:
+        #return [v for v in values if len(v) == 3 and v[1] != '?' and v[2] != '?']
     return values
 
 
