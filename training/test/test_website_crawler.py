@@ -9,7 +9,7 @@ from flask import Flask
 DEFAULT_PARA_SIZE = 5
 
 
-class TestIteratorAndStorer(unittest.TestCase):
+class TestWebsiteCrawler(unittest.TestCase):
     def setUp(self):
         self.app = Flask(__name__)
         self.app.config['URL_TIMEOUT'] = 10
@@ -19,8 +19,7 @@ class TestIteratorAndStorer(unittest.TestCase):
 
         self.test_link = "https://www.10dakot.co.il/recipe/%D7%9E%D7%AA%D7%9B%D7%95%D7%9F-%D7%9C%D7%A4%D7%A0%D7%A7%D7%99%D7%99%D7%A7/"
 
-
-    def test_extract_and_store(self):
+    def test_crawler(self):
         original_spreadsheet = training_storer.get_values(ignore_un_tagged=False, cells_range='A:A', target_spreadsheet=TEST_SPREADSHEET_ID)
         added_cells_count = WebsiteCrawler.crawl(self.test_link, caching_manager=self.temp_caching_manager,
                                               paragraph_size=DEFAULT_PARA_SIZE)
@@ -44,8 +43,8 @@ class TestIteratorAndStorer(unittest.TestCase):
                 result = iterator.next()
         except:
             pass
-
-        training_storer.delete_values(cells_range='A6:A', target_spreadsheet=TEST_SPREADSHEET_ID)
+        finally:
+            training_storer.delete_values(cells_range='A6:A', target_spreadsheet=TEST_SPREADSHEET_ID)
 
 
 if __name__ == '__main__':
