@@ -1,13 +1,14 @@
 import traceback
 
 from flask import jsonify
+from training.website_crawler import WebsiteCrawler
 
 import main_flow
 
 
 class TrainingService:
-    def __init__(self):
-        pass
+    def __init__(self, caching_manager):
+        self.caching_manager = caching_manager
 
     @staticmethod
     def train():
@@ -17,11 +18,17 @@ class TrainingService:
             traceback.print_exc()
             print(exc)
 
-    @staticmethod
-    def populate_training(form):
-        password = form.get('password')
+    def populate_training(self, request):
+        username = request.headers.get('username')
+        password = request.headers.get('password')
+        url = request.form.get('url')
 
-        if password != "toy_password":
-            return jsonify({'error': 'Invalid password'}), 401
+        if username != 'username' or password != 'password':
+            return jsonify({'error': 'Wrong username or password'}), 401
 
-        return jsonify({'status': 'OK'}), 200
+        if not url:
+            return jsonify({'error': 'Url not provided'}), 400
+
+        length = WebsiteCrawler.crawl(url, self.caching_manager, 5)
+
+        return jsonify({'message': 'Success! {} lines added.'.format(length), 'status': 'OK'}), 200
