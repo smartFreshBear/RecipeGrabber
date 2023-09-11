@@ -5,7 +5,7 @@ import re
 
 class Vectorizer(ABC):
     TOP_WORD_NUM = 1500
-    EXTRA_FEATURES_NUM = 14
+    EXTRA_FEATURES_NUM = 15
 
     NEW_LINE_TO_WORD_RATIO_IDX = TOP_WORD_NUM + 1
     QUESTION_MARKS_VALUES_IDX = NEW_LINE_TO_WORD_RATIO_IDX + 1
@@ -15,7 +15,8 @@ class Vectorizer(ABC):
     SLASH_MARKS_VALUES_IDX = COLON_MARKS_VALUES_IDX + 1
     DASH_MARKS_VALUES_IDX = SLASH_MARKS_VALUES_IDX + 1
     COMMA_MARKS_VALUES_IDX = DASH_MARKS_VALUES_IDX + 1
-    DIGITS_TO_WORDS_RATIO_IDX = COMMA_MARKS_VALUES_IDX + 1
+    PERCENT_MARKS_VALUES_IDX = COMMA_MARKS_VALUES_IDX + 1
+    DIGITS_TO_WORDS_RATIO_IDX = PERCENT_MARKS_VALUES_IDX + 1
 
     FROM_NAME_TO_LABELS = {}
 
@@ -62,6 +63,7 @@ class Vectorizer(ABC):
         Vectorizer.enrich_count_char_for_index(vectorized, table, self.SLASH_MARKS_VALUES_IDX, '/')
         Vectorizer.enrich_count_char_for_index(vectorized, table, self.DASH_MARKS_VALUES_IDX, '-')
         Vectorizer.enrich_count_char_for_index(vectorized, table, self.COMMA_MARKS_VALUES_IDX, ',')
+        Vectorizer.enrich_count_char_for_index(vectorized, table, self.PERCENT_MARKS_VALUES_IDX, '%')
         self.enrich_ratio_word_to_numbers(vectorized, table)
 
     @staticmethod
