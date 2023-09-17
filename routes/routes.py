@@ -1,4 +1,4 @@
-from flask import Blueprint, request
+from flask import Blueprint, Flask, request
 
 from services.user_service import UserService
 from services.broken_links_service import BrokenLinkService
@@ -11,7 +11,7 @@ api_bp = Blueprint('api_bp', __name__)
 
 class Routes:
     def __init__(self, db, executor, caching_manager):
-        self.training_service = TrainingService()
+        self.training_service = TrainingService(caching_manager)
         self.en_text_extractor_service = EnglishTextExtractorService()
         self.text_extractor_service = TextExtractorService(db, executor, caching_manager)
         self.broken_links_service = BrokenLinkService(db)
@@ -21,6 +21,8 @@ class Routes:
     def register_routes(self):
         @api_bp.route('/train')
         def train(): return self.training_service.train()
+
+        self.register_training_route(self.training_service)
 
         @api_bp.route('/find_recipe_in_text/', methods=['POST'])
         def check_if_text_is_recipe(): return self.text_extractor_service.check_if_text_in_recipe(request.form)
@@ -37,8 +39,10 @@ class Routes:
         @api_bp.route('/find_recipe_in_url/', methods=['POST'])
         def find_recipe_in_url_window_algo_based(): return self.text_extractor_service.find_recipe_in_url(request.form)
 
-        @api_bp.route('/populate_training_example_from_url/', methods=['POST'])
-        def populate_training_example_from_url(): return self.training_service.populate_training(request.form)
-
         @api_bp.route('/en/find_recipe_in_url/', methods=['POST'])
         def en_find_recipe_in_url_window_algo_based(): return self.en_text_extractor_service.find_recipe_in_url(request.form)
+
+    @staticmethod
+    def register_training_route(training_service):
+        @api_bp.route('/populate_training', methods=['POST'])
+        def train_from_url(): return training_service.populate_training(request)
