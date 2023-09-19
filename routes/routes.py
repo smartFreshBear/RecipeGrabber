@@ -1,4 +1,4 @@
-from flask import Blueprint, request
+from flask import Blueprint, jsonify, request
 
 from services.user_service import UserService
 from services.broken_links_service import BrokenLinkService
@@ -10,12 +10,12 @@ api_bp = Blueprint('api_bp', __name__)
 
 
 class Routes:
-    def __init__(self, db, executor, caching_manager):
+    def __init__(self, crud, executor, caching_manager):
         self.training_service = TrainingService()
         self.en_text_extractor_service = EnglishTextExtractorService()
-        self.text_extractor_service = TextExtractorService(db, executor, caching_manager)
-        self.broken_links_service = BrokenLinkService(db)
-        self.user_service = UserService(db)
+        self.text_extractor_service = TextExtractorService(crud, executor, caching_manager)
+        self.broken_links_service = BrokenLinkService(crud)
+        self.user_service = UserService(crud)
         self.register_routes()
 
     def register_routes(self):

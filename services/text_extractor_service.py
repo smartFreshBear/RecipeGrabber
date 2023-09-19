@@ -11,9 +11,9 @@ from utils import text_extractor
 
 
 class TextExtractorService:
-    def __init__(self, db, executor, caching_manager):
+    def __init__(self, crud, executor, caching_manager):
         self.executor = executor
-        self.stored_recipes_service = StoredRecipesService(db)
+        self.stored_recipes_service = StoredRecipesService(crud)
         self.caching_manager = caching_manager
 
     def find_recipe_in_url(self, form):
@@ -23,8 +23,7 @@ class TextExtractorService:
         try:
             if self.caching_manager.exists_in_cache(key=url, name="frequently_used_recipes"):
                 return jsonify(json.loads(self.caching_manager.get_from_cache(name="frequently_used_recipes", key=url)))
-            if self.stored_recipes_service.url_in_db(url):
-                recipe = self.stored_recipes_service.get_recipe_from_db(url, ingredients, instructions)
+            if recipe := self.stored_recipes_service.get_recipe_from_db(url, ingredients, instructions):
                 self.caching_manager.cache_url(key=url, value=json.dumps(recipe), name="frequently_used_recipes")
                 return jsonify(recipe)
 
@@ -50,6 +49,9 @@ class TextExtractorService:
         except redis.RedisError as exc:
             logging.error(exc)
             return jsonify({"error": "Redis Caching error"}), 500
+        except Exception:
+            logging.exception("Unexpected error")
+            return jsonify({"error": "Unexpected error"}), 500
 
     def check_if_text_in_recipe(self, form):
         all_text = form['text']
