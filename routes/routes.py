@@ -1,5 +1,7 @@
 from flask import Blueprint, request
 
+from algorithms.llm_based_algo import LlmBasedAlgo
+from algorithms.plain_nn_window_based_algo import PlainNNWindowBasedAlgo
 from services.user_service import UserService
 from services.broken_links_service import BrokenLinkService
 from services.en_text_extractor_service import EnglishTextExtractorService
@@ -10,10 +12,14 @@ api_bp = Blueprint('api_bp', __name__)
 
 
 class Routes:
-    def __init__(self, db, executor, caching_manager):
+    def __init__(self, db, executor, caching_manager = None):
         self.training_service = TrainingService()
         self.en_text_extractor_service = EnglishTextExtractorService()
-        self.text_extractor_service = TextExtractorService(db, executor, caching_manager)
+        self.text_extractor_service = TextExtractorService(db,
+                                                           executor,
+                                                           caching_manager,
+                                                           PlainNNWindowBasedAlgo(),
+                                                           LlmBasedAlgo())
         self.broken_links_service = BrokenLinkService(db)
         self.user_service = UserService(db)
         self.register_routes()

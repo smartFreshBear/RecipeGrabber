@@ -7,8 +7,8 @@ caching_manager_logger = create_logger_instance('Caching_Manager')
 
 class CachingManager:
     def __init__(self):
-        self.redis = redis.Redis(host='redis-10060.c135.eu-central-1-1.ec2.cloud.redislabs.com', port=10060,
-                                 username='default', password='CWqOy4UlreQiOgo8lenpSc6ZMnCvTA8x', decode_responses=True)
+        self.redis = redis.Redis(host='redis-10116.c311.eu-central-1-1.ec2.cloud.redislabs.com', port=10116,
+                                 username='default', password='Js19zoheJnZlhKkCxwOuNo4ZTrMMNYzf', decode_responses=True)
 
     def cache_url(self, key, value=None, name=None, time=None):
         if name is None:
