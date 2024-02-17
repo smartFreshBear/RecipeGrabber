@@ -22,11 +22,11 @@ app.app_context().push()
 print(os.path.dirname(os.path.realpath(__file__)))
 db = SQLAlchemy(app)
 executor = Executor(app)
-caching_manager = CachingManager()
+# caching_manager = CachingManager()
 
 
 with app.app_context():
-    routes = Routes(db, executor, caching_manager)
+    routes = Routes(db, executor)
     app.register_blueprint(api_bp)
     db.create_all()
 
@@ -50,7 +50,7 @@ def run_server():
     cherrypy.config.update({
         'engine.autoreload_on': True,
         'log.screen': True,
-        'server.socket_port': 5000,
+        'server.socket_port': 8889,
         'server.socket_host': '0.0.0.0'
     })
 
@@ -60,8 +60,6 @@ def run_server():
 
 
 if __name__ == '__main__':
-    # server = gevent.pywsgi.WSGIServer((u'0.0.0.0', 5000), app, handler_class=WebSocketHandler)
-    # server.serve_forever()
     run_server()
 
 

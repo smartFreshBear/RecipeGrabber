@@ -4,35 +4,34 @@ from _socket import timeout
 import redis
 from flask import jsonify, json
 
-from algorithms import window_key_word_based_algo
+from algorithms.recipe_extarctor_algorithm import ExtractorAlgorithm
 from apputils import text_prettifer
 from services.stored_recipes_service import StoredRecipesService
-from utils import text_extractor
+from utils.text_extractor import TextExtractor
 
 
 class TextExtractorService:
-    def __init__(self, db, executor, caching_manager):
+    def __init__(self, db, executor, caching_manager,
+                 initial_algorithm: ExtractorAlgorithm,
+                 llm_algorithm: ExtractorAlgorithm):
         self.executor = executor
         self.stored_recipes_service = StoredRecipesService(db)
         self.caching_manager = caching_manager
+        self.text_extractor = TextExtractor(caching_manager)
+        self.extractor_algorithm = initial_algorithm
+        self.llm_algorithm = llm_algorithm
 
     def find_recipe_in_url(self, form):
         url = form['url']
         instructions = form['instructions'].lower() == "true"
         ingredients = form['ingredients'].lower() == "true"
         try:
-            if self.caching_manager.exists_in_cache(key=url, name="frequently_used_recipes"):
-                return jsonify(json.loads(self.caching_manager.get_from_cache(name="frequently_used_recipes", key=url)))
             if self.stored_recipes_service.url_in_db(url):
                 recipe = self.stored_recipes_service.get_recipe_from_db(url, ingredients, instructions)
-                self.caching_manager.cache_url(key=url, value=json.dumps(recipe), name="frequently_used_recipes")
                 return jsonify(recipe)
 
-            all_text, title = text_extractor.get_all_text_from_url(url=url, caching_manager=self.caching_manager)
-            ingred_paragraph, instr_paragraph = window_key_word_based_algo.extract(ingredients, instructions, all_text)
-            response = self.create_json_response(ingred_paragraph, instr_paragraph, title, url)
-
-            self.caching_manager.cache_url(key=url, value=json.dumps(response), name="frequently_used_recipes")
+            all_text, title = self.text_extractor.get_all_text_from_url(url=url)
+            response = self.extract_recipe_given_text(all_text, title, url)
             self.executor.submit(self.stored_recipes_service.add_recipe_to_db, response=response)
 
             return response
@@ -51,11 +50,18 @@ class TextExtractorService:
             logging.error(exc)
             return jsonify({"error": "Redis Caching error"}), 500
 
+    def extract_recipe_given_text(self, all_text, title, url):
+        ingred_paragraph, instr_paragraph = self.extractor_algorithm.extract(all_text)
+        ingred_paragraph, instr_paragraph = (
+            self.llm_algorithm.extract(f'ingredients: {ingred_paragraph}\n'
+                                       f'instructions: {instr_paragraph}'))
+        response = self.create_json_response(ingred_paragraph, instr_paragraph, title, url)
+        return response
+
     def check_if_text_in_recipe(self, form):
         all_text = form['text']
 
-        ingredients, instructions = window_key_word_based_algo.extract(True, True, all_text)
-        return self.create_json_response(ingredients, instructions, '', '')
+        return self.extract_recipe_given_text(all_text, "<title>", "")
 
     @staticmethod
     def create_json_response(ingred_paragraph, instr_paragraph, title, url):
