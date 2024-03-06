@@ -48,7 +48,7 @@ def run_server():
     cherrypy.config.update({
         'engine.autoreload_on': True,
         'log.screen': True,
-        'server.socket_port': 8889,
+        'server.socket_port': 5000,
         'server.socket_host': '0.0.0.0'
     })
 
