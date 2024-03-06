@@ -1,14 +1,21 @@
+import os
+
 from utils.logger import create_logger_instance
 
 import redis
 
 caching_manager_logger = create_logger_instance('Caching_Manager')
 
+# Get redis connectivity details from the environment variables
+REDIS_HOST = os.environ.get('REDIS_HOST')
+REDIS_PORT = int(os.environ.get('REDIS_PORT'))
+REDIS_PASSWORD = os.environ.get('REDIS_PASSWORD')
+
 
 class CachingManager:
     def __init__(self):
-        self.redis = redis.Redis(host='redis-10116.c311.eu-central-1-1.ec2.cloud.redislabs.com', port=10116,
-                                 username='default', password='Js19zoheJnZlhKkCxwOuNo4ZTrMMNYzf', decode_responses=True)
+        self.redis = redis.Redis(host=REDIS_HOST, port=REDIS_PORT,
+                                 username='default', password=REDIS_PASSWORD, decode_responses=True)
 
     def cache_url(self, key, value=None, name=None, time=None):
         if name is None:
