@@ -23,8 +23,8 @@ class TextExtractorService:
 
     def find_recipe_in_url(self, form):
         url = form['url']
-        instructions = form['instructions'].lower() == "true"
-        ingredients = form['ingredients'].lower() == "true"
+        instructions = getattr(form, 'instructions', 'true').lower() == "true"
+        ingredients = getattr(form, 'ingredients', 'true').lower() == "true"
         try:
             if self.stored_recipes_service.url_in_db(url):
                 recipe = self.stored_recipes_service.get_recipe_from_db(url, ingredients, instructions)
