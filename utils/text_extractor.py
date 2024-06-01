@@ -15,6 +15,8 @@ logging.getLogger('text.extractor')
 
 USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 11_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
 
+GOOGLE_CACHE_PREFIX = 'https://webcache.googleusercontent.com/search?q=cache:'
+
 
 class TextExtractor:
 
@@ -44,10 +46,16 @@ class TextExtractor:
             raise ValueError("could not handle request")
         try:
             url_utf_8 = safe_url_string(url)
+
+            if retries % 2 == 1:
+                url_utf_8 = f'{GOOGLE_CACHE_PREFIX}{url_utf_8}'
+
             headers = {'User-Agent': USER_AGENT}
             request = urllib.request.Request(url_utf_8, None, headers)
 
             response = urllib.request.urlopen(request, timeout=time_out_secs)
+            if response.status == 404:
+                raise Exception('website not found')
             given_encoding = response.headers.get_content_charset()
             encoding = 'utf-8' if given_encoding is None else given_encoding
             html = response.read().decode(encoding)
@@ -73,7 +81,7 @@ class TextExtractor:
                 logging.error(
                     "an exception occurred while trying to access url {} trying again \n more details: {}".format(url,
                                                                                                                   exc))
-                time.sleep(1)
+                time.sleep(3)
                 retries = retries - 1
                 return self.get_all_text_from_url(url, retries)
             else:
