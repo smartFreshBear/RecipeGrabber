@@ -2,7 +2,6 @@ import re
 
 from daos.key_words import key_words
 
-ENGLISH_LETTERS = 'a b c d e f g h i j k l m n o p q r s t u v w x y z'.split(' ')
 HEBREW_LETTERS = 'א ב ג ד ה ו ז ח ט י כ ל מ נ ס ע צ ק ר ש פ ת ן ך ץ ף ם'.split(' ')
 MEASUREMENTS_CHARS = '/ \\ % ! ½ ¾ ¼ \' -'.split(' ')
 
@@ -111,7 +110,6 @@ def get_regex_for_type(type):
 
 
 all_prettifies = [
-    OnlyHebrewAlphanumeric,
     UnwantedPatternRemover,
     RemoveInstructions,
     RemoveHeadlinesTop,
