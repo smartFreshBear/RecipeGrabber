@@ -5,7 +5,6 @@ import redis
 from flask import jsonify, json
 
 from algorithms.recipe_extarctor_algorithm import ExtractorAlgorithm
-from apputils import text_prettifer
 from services.stored_recipes_service import StoredRecipesService
 from utils.text_extractor import TextExtractor
 
@@ -65,8 +64,5 @@ class TextExtractorService:
 
     @staticmethod
     def create_json_response(ingred_paragraph, instr_paragraph, title, url):
-        json_response = text_prettifer.process({'ingredients': ingred_paragraph,
-                                                'instructions': instr_paragraph})
-        json_response['title'] = title
-        json_response['url'] = url
+        json_response = {'ingredients': ingred_paragraph, 'instructions': instr_paragraph, 'title': title, 'url': url}
         return json_response

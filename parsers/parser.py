@@ -2,7 +2,7 @@ import main_flow.main_flow
 from daos.key_words import key_words as keys
 
 ACCEPTANCE_BENCHMARK_INGRID = 0.05
-ACCEPTANCE_BENCHMARK_INSTRU = 0.03
+ACCEPTANCE_BENCHMARK_INSTRU = 0.005
 
 WINDOW_SIZE_INGRID = 10
 WINDOW_SIZE_INSTRUCT = 15
