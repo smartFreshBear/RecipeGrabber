@@ -4,6 +4,7 @@ import urllib.parse
 from _socket import timeout
 
 from bs4 import BeautifulSoup
+from sqlalchemy.sql.cache_key import NO_CACHE
 from w3lib.url import safe_url_string
 import logging
 import html2text
@@ -16,6 +17,8 @@ logging.getLogger('text.extractor')
 USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 11_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
 
 GOOGLE_CACHE_PREFIX = 'https://webcache.googleusercontent.com/search?q=cache:'
+
+NO_CACHE_STRING = 'cache:https:'
 
 
 class TextExtractor:
@@ -64,6 +67,8 @@ class TextExtractor:
             h.ignore_links = False
             h.ignore_images = True
             title = TextExtractor.find_title(html)
+            if NO_CACHE_STRING in title:
+                raise Exception('website not found in google cache')
             allText = h.handle(html)
 
             return allText, title
