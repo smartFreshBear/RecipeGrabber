@@ -4,7 +4,6 @@ import urllib.parse
 from _socket import timeout
 
 from bs4 import BeautifulSoup
-from sqlalchemy.sql.cache_key import NO_CACHE
 from w3lib.url import safe_url_string
 import logging
 import html2text
