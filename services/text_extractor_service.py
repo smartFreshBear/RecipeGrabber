@@ -52,9 +52,12 @@ class TextExtractorService:
 
     def extract_recipe_given_text(self, all_text, title, url):
         ingred_paragraph, instr_paragraph = self.extractor_algorithm.extract(all_text)
+        json_response = text_prettifer.process({"ingredients": ingred_paragraph,
+                                                "instructions": instr_paragraph})
         ingred_paragraph, instr_paragraph = (
-            self.llm_algorithm.extract(f'ingredients: {ingred_paragraph}\n'
-                                       f'instructions: {instr_paragraph}'))
+            self.llm_algorithm.extract(str(json_response)))
+
+
         response = self.create_json_response(ingred_paragraph, instr_paragraph, title, url)
         return response
 
@@ -64,9 +67,13 @@ class TextExtractorService:
         return self.extract_recipe_given_text(all_text, "<title>", "")
 
     @staticmethod
-    def create_json_response(ingred_paragraph, instr_paragraph, title, url):
-        json_response = text_prettifer.process({'ingredients': ingred_paragraph,
-                                                'instructions': instr_paragraph})
+    def create_json_response(ingredients: str,
+                             instruction: str,
+                             title:str,
+                             url: str):
+        json_response = {}
+        json_response['ingredients'] = ingredients
+        json_response['instructions'] = instruction
         json_response['title'] = title
         json_response['url'] = url
         return json_response

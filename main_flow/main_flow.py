@@ -1,45 +1,25 @@
-from vectorizing import vectorizer_heb
-import threading
-
 from pathlib import Path
 
-
-import requests_cache
 from tensorflow import keras
 import data_loader
 from training import training_test_cv_divider
-from utils import presistor
 from utils.logger import create_logger_instance
-from stemming import stemming
+from vectorizing.vectorizer import Vectorizer
 
 main_flow_logger = create_logger_instance('Main_Flow')
-stemmer = stemming.StemmerHebrew()
-vectorizer = vectorizer_heb.VectorizerHeb()
+vectorizer = Vectorizer()
 
 
 # Cache file names:
 INSTRUCTIONS_MODEL = 'inst_params'
-INSTRUCTIONS_TOP_WORDS = 'inst_top_words.pkl'
-
 INGREDIENTS_MODEL = 'ing_params'
-INGREDIENTS_TOP_WORDS = 'ing_top_words.pkl'
 
-HEBREW_NLP_END_POINT = 'https://hebrew-nlp.co.il/service/morphology/normalize'
 
-requests_cache.install_cache(cache_name='hebrew_roots', backend='sqlite', expire_after=60 * 60 * 24 * 100)
 
 
 def loadCache():
-    global top_instruc_dict
-    global top_ingred_dict
     global model_instruction
     global model_ingredients
-
-    top_instruc_dict = presistor.load_parameter_cache_from_disk(INSTRUCTIONS_TOP_WORDS)
-    top_ingred_dict = presistor.load_parameter_cache_from_disk(INGREDIENTS_TOP_WORDS)
-
-    global from_word_to_stem_cache
-    from_word_to_stem_cache = stemmer.load_from_word_to_stem()
 
     file_instru = f'{INSTRUCTIONS_MODEL}'
     file_ingri = f'{INGREDIENTS_MODEL}'
@@ -51,75 +31,23 @@ def loadCache():
     model_instruction = keras.models.load_model(file_instru)
     model_ingredients = keras.models.load_model(file_ingri)
 
-    return model_instruction and model_ingredients and top_instruc_dict and top_ingred_dict
+    return model_instruction and model_ingredients
 
 
 FROM_NAME_TO_LABELS = {}
 
 
-def get_already_cached_words(attention_seekers, words):
-    cached_words = [item for item in words if item not in attention_seekers]
-    cached_words = list(map(lambda w: from_word_to_stem_cache[w], cached_words))
-    return cached_words
-
-
-def top_words(tables, top_num):
-    instru_dict = {}
-    ingri_dict = {}
-    for row in tables:
-        if len(row) == 3:
-            if row[1] == '1':
-                count_word_in_row(ingri_dict, row)
-
-            if row[2] == '1':
-                count_word_in_row(instru_dict, row)
-
-    top_instru = list(sort_dic_by_size(instru_dict))[: top_num]
-
-    global top_instruc_dict
-    top_instruc_dict = {key: instru_dict[key] for key in top_instru}
-
-    top_ingri = list(sort_dic_by_size(ingri_dict))[: top_num]
-
-    global top_ingred_dict
-    top_ingred_dict = {key: ingri_dict[key] for key in top_ingri}
-
-    return top_instruc_dict, top_ingred_dict
-
-
-# ;)
-def sort_dic_by_size(x):
-    return {k: v for k, v in sorted(x.items(), key=lambda item: item[1], reverse=True)}
-
-
-def count_word_in_row(dict_ingri, row):
-    flatten_lst_of_words = row[0]
-    for word in flatten_lst_of_words:
-        incr(dict_ingri, word)
-
-
-def incr(dic, word):
-    if not word in dic:
-        dic[word] = 0
-    dic[word] += 1
-
-
 def load_data():
     table = data_loader.training_storer.get_values(False)
-    stemmed_dict = stemmer.stemmify(table)
-    top_instruction_words, top_ingredients_words = top_words(stemmed_dict, vectorizer.TOP_WORD_NUM)
 
-    # Save dictionaries to disk for caching
-    presistor.presist_parameters_to_disk(top_instruction_words, INSTRUCTIONS_TOP_WORDS)
-    presistor.presist_parameters_to_disk(top_ingredients_words, INGREDIENTS_TOP_WORDS)
+    vectorized_exam = vectorizer.vectorize(table)
 
-    vectorized_instr, instruction_lbls = vectorizer.vectorize(stemmed_dict, top_instruction_words, 2)
-    vectorized_ingrid, ingrid_lbls = vectorizer.vectorize(stemmed_dict, top_ingredients_words, 1)
+    labels_ingredients = vectorizer.get_labels_for(table, 1)
+    labels_instruction = vectorizer.get_labels_for(table, 2)
 
-    vectorizer.enrich_tables_vector(table, vectorized_ingrid, vectorized_instr)
 
-    FROM_NAME_TO_LABELS[INSTRUCTIONS_MODEL] = [vectorized_instr, instruction_lbls]
-    FROM_NAME_TO_LABELS[INGREDIENTS_MODEL] = [vectorized_ingrid, ingrid_lbls]
+    FROM_NAME_TO_LABELS[INSTRUCTIONS_MODEL] = [vectorized_exam, labels_instruction]
+    FROM_NAME_TO_LABELS[INGREDIENTS_MODEL] = [vectorized_exam, labels_ingredients]
 
 
 def train(name_group, test_error_tolerance):
@@ -132,7 +60,7 @@ def train(name_group, test_error_tolerance):
             training_test_cv_divider.divided_training_test(FROM_NAME_TO_LABELS[name_group][0],
                                                            FROM_NAME_TO_LABELS[name_group][1], 0.8)
 
-        model.fit(training_ex, training_labels, epochs=30,
+        model.fit(training_ex, training_labels, epochs=42,
                   validation_data=(validation_ex, validation_labels))
 
         test_error, _ = model.evaluate(test_ex, test_labels)
@@ -144,9 +72,10 @@ def train(name_group, test_error_tolerance):
 
 def create_model():
     model = keras.models.Sequential()
-    model.add(keras.layers.Dense(vectorizer.TOP_WORD_NUM + vectorizer.EXTRA_FEATURES_NUM, activation="relu"))
-    model.add(keras.layers.Dense(8, activation="relu"))
-    model.add(keras.layers.Dense(2, activation="relu"))
+    model.add(keras.layers.Dense(Vectorizer.BETA_VECTOR_SIZE, activation="relu"))
+    model.add(keras.layers.Dense(12, activation="relu"))
+    model.add(keras.layers.Dense(6, activation="relu"))
+    model.add(keras.layers.Dense(4, activation="relu"))
     model.add(keras.layers.Dense(1, activation="sigmoid"))
     model.compile(
         loss='binary_crossentropy',
@@ -155,20 +84,21 @@ def create_model():
     return model
 
 
-def predict_ingred_probes(text):
-    _, _, vectorized_ingred, ingred_lbls = vectorizer.example_to_vector(text, top_instruc_dict, top_ingred_dict)
+def predict_ingred_probes(text: str):
+    vectorized_ingred = vectorizer.example_to_vector_beta(text)
     return predict_vector_with_model(model_ingredients, vectorized_ingred)
 
 
-def predict_instruc_probes(text):
-    vectorized_instr, instruction_lbls, _, _ = vectorizer.example_to_vector(text, top_instruc_dict, top_ingred_dict)
+def predict_instruc_probes(text: str):
+    vectorized_instr = vectorizer.example_to_vector_beta(text)
     return predict_vector_with_model(model_instruction, vectorized_instr)
 
 
 def predict_vector_with_model(model, vector):
     try:
-        ans = model(vector)
-        ans = ans[1][0]
+        transpose_vector = vector.reshape(1, len(vector))
+        ans = model(transpose_vector)
+        ans = ans[0][0]
     except Exception as e:
         main_flow_logger.error(f'error has occurred during prediction, {e}')
         raise e
@@ -178,23 +108,15 @@ def predict_vector_with_model(model, vector):
 
 def main():
     global FROM_NAME_TO_LABELS
-    global parameters_instruc
-    global parameters_ingred
-    global top_instruc_dict
-    global top_ingred_dict
     global model_instruction
     global model_ingredients
 
     if not loadCache():
         load_data()
         model_instruction = train(name_group=INSTRUCTIONS_MODEL,
-                                  test_error_tolerance=0.037)
+                                  test_error_tolerance=0.02)
         model_ingredients = train(name_group=INGREDIENTS_MODEL,
-                                  test_error_tolerance=0.01)
-
-    caching_thread = threading.Thread(target=stemmer.periodically_save_cache)
-    caching_thread.start()
-
+                                  test_error_tolerance=0.02)
 
 if __name__ == '__main__':
     main()

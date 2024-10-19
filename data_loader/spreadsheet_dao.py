@@ -4,6 +4,7 @@ import os.path
 import pickle
 
 from google.auth.transport.requests import Request
+from google.oauth2 import service_account
 from googleapiclient.discovery import build
 
 # If modifying these scopes, delete the file token.pickle.
@@ -14,14 +15,17 @@ SAMPLE_SPREADSHEET_ID = '1NGRUyzImlaUd-UrTkNXSd1JB7OOHnw6e1h4AohRXFK8'
 
 SAMPLE_RANGE_NAME = 'A:C'
 
-
-
 def get_client_to_training_set():
-    creds = None
+    # Replace with the path to your new credentials file
+    SERVICE_ACCOUNT_FILE = 'engaged-treat-281721-8738be2b7d2c.json'
+
+    creds = service_account.Credentials.from_service_account_file(
+        SERVICE_ACCOUNT_FILE, scopes=SCOPES
+    )
     # The file token.pickle stores the user's access and refresh tokens, and is
     # created automatically when the authorization flow completes for the first
     # time.
-    if os.path.exists('token.pickle'):
+    if not creds and os.path.exists('token.pickle'):
         with open('token.pickle', 'rb') as token:
             creds = pickle.load(token)
     # If there are no (valid) credentials available, let the user log in.

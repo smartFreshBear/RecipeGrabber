@@ -49,7 +49,7 @@ class TextExtractor:
         try:
             url_utf_8 = safe_url_string(url)
 
-            if retries % 2 == 1:
+            if retries % 2 == 0:
                 url_utf_8 = f'{GOOGLE_CACHE_PREFIX}{url_utf_8}'
 
             headers = {'User-Agent': USER_AGENT}
