@@ -1,10 +1,10 @@
 import main_flow.main_flow
 from daos.key_words import key_words as keys
 
-ACCEPTANCE_BENCHMARK_INGRID = 0.05
-ACCEPTANCE_BENCHMARK_INSTRU = 0.03
+ACCEPTANCE_BENCHMARK_INGRID = 0.025
+ACCEPTANCE_BENCHMARK_INSTRU = 0.032
 
-WINDOW_SIZE_INGRID = 10
+WINDOW_SIZE_INGRID = 15
 WINDOW_SIZE_INSTRUCT = 15
 
 INSTRUCTIONS = 'instructions'
@@ -35,14 +35,18 @@ def is_window_valid_ingred(text_window):
 def is_window_valid_instr(text_window):
     return ACCEPTANCE_BENCHMARK_INSTRU < main_flow.main_flow.predict_instruc_probes('\n'.join(text_window))
 
-
 def is_window_valid(text_window, type):
+    #check sanity
+    if len(text_window) < 3:
+        return False
     configs_for_type = FROM_TYPE_TO_DEFS[type]
     score_of_paragraph = get_score_for_text_window_of_type(text_window, type)
     return configs_for_type['ACCEPTANCE_BENCHMARK'] < score_of_paragraph
 
-
 def get_score_for_text_window_of_type(text_window, type):
+    #check sanity
+    if len(text_window) < 3:
+        return 0
     configs_for_type = FROM_TYPE_TO_DEFS[type]
     score_of_paragraph = configs_for_type['CLASSIFIER']('\n'.join(text_window))
     return score_of_paragraph
@@ -75,7 +79,7 @@ def find_last_index(line_num, lines_of_text, type):
     if not window_is_valid:
         return line
     while window_is_valid:
-        line += 1
+        line += FROM_TYPE_TO_DEFS[type]['WINDOW_SIZE'] // 2
         text_window = get_paragraph_from_indexes(line, line + FROM_TYPE_TO_DEFS[type]['WINDOW_SIZE'], lines_of_text)
         window_is_valid = is_window_valid(text_window, type)
 

@@ -2,8 +2,8 @@ import re
 
 from daos.key_words import key_words
 
-ENGLISH_LETTERS = 'a b c d e f g h i j k l m n o p q r s t u v w x y z'.split(' ')
-HEBREW_LETTERS = 'א ב ג ד ה ו ז ח ט י כ ל מ נ ס ע צ ק ר ש פ ת ן ך ץ ף ם'.split(' ')
+# ENGLISH_LETTERS = 'a b c d e f g h i j k l m n o p q r s t u v w x y z'.split(' ')
+# HEBREW_LETTERS = 'א ב ג ד ה ו ז ח ט י כ ל מ נ ס ע צ ק ר ש פ ת ן ך ץ ף ם'.split(' ')
 MEASUREMENTS_CHARS = '/ \\ % ! ½ ¾ ¼ \' -'.split(' ')
 
 INSTRUCTIONS = 'instructions'
@@ -33,24 +33,6 @@ class UnwantedPatternRemover(TextPrettifier):
             fixed_doc.append(re.sub(url_regex, '', row))
         return fixed_doc
 
-
-class OnlyHebrewAlphanumeric(TextPrettifier):
-    supporting_types = [INGREDIENTS, INSTRUCTIONS]
-
-    @staticmethod
-    def process(text_lines, type):
-        answer = []
-        for line in text_lines:
-            filtered_line = []
-            for letter in line:
-                if OnlyHebrewAlphanumeric._is_valid_hebrew_char(letter):
-                    filtered_line.append(letter)
-            answer.append(''.join(filtered_line))
-        return answer
-
-    @staticmethod
-    def _is_valid_hebrew_char(letter):
-        return letter in HEBREW_LETTERS or letter in MEASUREMENTS_CHARS or letter.isnumeric() or letter == ' '
 
 
 class RemoveHeadlinesTop(TextPrettifier):
@@ -111,14 +93,13 @@ def get_regex_for_type(type):
 
 
 all_prettifies = [
-    OnlyHebrewAlphanumeric,
     UnwantedPatternRemover,
     RemoveInstructions,
     RemoveHeadlinesTop,
     RemoveHeadlinesBottom,
     RemoveEmptyLines, ]
 
-
+#TODO this should come prior to the llm handling to remove token usage
 def process(json_response):
     ingredients_text = json_response[INGREDIENTS]
     instructions_text = json_response[INSTRUCTIONS]
