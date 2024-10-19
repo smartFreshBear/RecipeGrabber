@@ -6,7 +6,6 @@ INSTRUCTIONS = 'instructions'
 
 
 class PlainNNWindowBasedAlgo(ExtractorAlgorithm):
-    # TODO stopped here need to use the beta vectorizer instead of the old one
     def extract(self, all_text) -> (str, str):
 
         lines_of_text = list(filter(None, all_text.split('\n')))
@@ -31,7 +30,7 @@ class PlainNNWindowBasedAlgo(ExtractorAlgorithm):
     def extract_paragraph_from_one_of_the_indices(self, all_relevant_indices, lines_of_text, type):
         best_score_so_far = 0
         best_paragraph = ''
-        # stemmer.prepare_stem_mapping(lines_of_text)
+
         for i in range(0, len(all_relevant_indices)):
             first_line = all_relevant_indices[i]
             last_line = parsers.parser.find_last_index(first_line, lines_of_text, type)
