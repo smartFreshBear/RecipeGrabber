@@ -75,9 +75,9 @@ def train(name_group, test_error_tolerance):
 def create_model():
     model = keras.models.Sequential()
     model.add(keras.layers.Dense(Vectorizer.BETA_VECTOR_SIZE, activation="relu"))
-    model.add(keras.layers.Dense(12, activation="relu"))
-    model.add(keras.layers.Dense(6, activation="relu"))
+    # model.add(keras.layers.Dense(12, activation="relu"))
     model.add(keras.layers.Dense(4, activation="relu"))
+    model.add(keras.layers.Dense(2, activation="relu"))
     model.add(keras.layers.Dense(1, activation="sigmoid"))
     model.compile(
         loss='binary_crossentropy',
