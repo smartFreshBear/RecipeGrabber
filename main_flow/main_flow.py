@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from tensorflow import keras
+import keras
 import data_loader
 from training import training_test_cv_divider
 from utils.logger import create_logger_instance
@@ -21,10 +21,10 @@ def loadCache():
     global model_instruction
     global model_ingredients
 
-    file_instru = f'{INSTRUCTIONS_MODEL}'
-    file_ingri = f'{INGREDIENTS_MODEL}'
+    file_instru = f'{INSTRUCTIONS_MODEL}.keras'
+    file_ingri = f'{INGREDIENTS_MODEL}.keras'
 
-    if not (Path(file_instru).is_dir() and Path(file_ingri).is_dir()):
+    if not (Path(file_instru).is_file() and Path(file_ingri).is_file()):
         return None
 
     main_flow_logger.info('loading cache')
@@ -65,7 +65,7 @@ def train(name_group, test_error_tolerance):
 
         test_error, _ = model.evaluate(test_ex, test_labels)
 
-    model.save(f'{name_group}')
+    model.save(f'{name_group}.keras')
 
     return model
 
@@ -73,9 +73,8 @@ def train(name_group, test_error_tolerance):
 def create_model():
     model = keras.models.Sequential()
     model.add(keras.layers.Dense(Vectorizer.BETA_VECTOR_SIZE, activation="relu"))
-    model.add(keras.layers.Dense(12, activation="relu"))
-    model.add(keras.layers.Dense(6, activation="relu"))
     model.add(keras.layers.Dense(4, activation="relu"))
+    model.add(keras.layers.Dense(2, activation="relu"))
     model.add(keras.layers.Dense(1, activation="sigmoid"))
     model.compile(
         loss='binary_crossentropy',
