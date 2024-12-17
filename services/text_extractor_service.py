@@ -1,11 +1,16 @@
 import logging
 import traceback
 from _socket import timeout
+from typing import List
+
 import redis
-from flask import jsonify, json
+from flask import jsonify
+from werkzeug.exceptions import UnprocessableEntity
 
 from algorithms.recipe_extarctor_algorithm import ExtractorAlgorithm
 from apputils import text_prettifer
+from apputils.constants import Constants
+from common.exceptions.exceptions import WeCouldNotParseTheResponse
 from services.stored_recipes_service import StoredRecipesService
 from utils.text_extractor import TextExtractor
 
@@ -35,7 +40,13 @@ class TextExtractorService:
             self.executor.submit(self.stored_recipes_service.add_recipe_to_db, response=response)
 
             return response
+
+        except UnprocessableEntity as exc:
+            logging.error(f'UnprocessableEntity: {exc}')
+            return jsonify({"error": f"Could not handle request to {url}."}), 422
+
         except BlockingIOError as exc:
+            print(f'BlockingIOError: {exc}')
             return jsonify({"error": f"The requests to {url} has been blocked temporarily "
                                      f"duo to repeated failed attempts."}), 500
         except ValueError as exc:
@@ -50,16 +61,32 @@ class TextExtractorService:
             logging.error(exc)
             return jsonify({"error": "Redis Caching error"}), 500
 
-    def extract_recipe_given_text(self, all_text, title, url):
+    @staticmethod
+    def size_sanity_check(texts: List[str]) -> bool:
+
+        amount_of_words = sum([len(text.split(' ')) for text in texts])
+
+        if amount_of_words > Constants.MIN_RECIPE_SIZE:
+            return True
+        raise WeCouldNotParseTheResponse('too small response from web')
+
+    def extract_recipe_given_text(self, all_text: str, title: str, url: str):
+
+        self.size_sanity_check([all_text])
+
         ingred_paragraph, instr_paragraph = self.extractor_algorithm.extract(all_text)
+        # TODO - need to extact to function that check list of words, sum it and then comaring, we call it - check sanitiy size
+        self.size_sanity_check(ingred_paragraph + instr_paragraph)
         json_response = text_prettifer.process({"ingredients": ingred_paragraph,
                                                 "instructions": instr_paragraph})
         ingred_paragraph, instr_paragraph = (
             self.llm_algorithm.extract(str(json_response)))
 
+        self.size_sanity_check(ingred_paragraph + instr_paragraph)
 
         response = self.create_json_response(ingred_paragraph, instr_paragraph, title, url)
         return response
+
 
     def check_if_text_in_recipe(self, form):
         all_text = form['text']
@@ -71,9 +98,8 @@ class TextExtractorService:
                              instruction: str,
                              title:str,
                              url: str):
-        json_response = {}
-        json_response['ingredients'] = ingredients
-        json_response['instructions'] = instruction
-        json_response['title'] = title
-        json_response['url'] = url
-        return json_response
+
+        return {'ingredients': ingredients,
+                         'instructions': instruction,
+                         'title': title,
+                         'url': url}
