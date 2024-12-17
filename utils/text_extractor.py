@@ -13,7 +13,7 @@ from services.timeout_blacklist_service import increase_timeout_count, in_timeou
 
 logging.getLogger('text.extractor')
 
-USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 11_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+USER_AGENT = """Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36'"""
 
 GOOGLE_CACHE_PREFIX = 'https://webcache.googleusercontent.com/search?q=cache:'
 

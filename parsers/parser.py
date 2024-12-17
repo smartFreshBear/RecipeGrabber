@@ -1,4 +1,5 @@
 import main_flow.main_flow
+from apputils.constants import Constants
 from daos.key_words import key_words as keys
 
 ACCEPTANCE_BENCHMARK_INGRID = 0.025
@@ -37,7 +38,7 @@ def is_window_valid_instr(text_window):
 
 def is_window_valid(text_window, type):
     #check sanity
-    if len(text_window) < 3:
+    if len(''.join(text_window)) < Constants.MIN_RECIPE_SIZE:
         return False
     configs_for_type = FROM_TYPE_TO_DEFS[type]
     score_of_paragraph = get_score_for_text_window_of_type(text_window, type)
