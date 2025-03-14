@@ -79,8 +79,14 @@ class TextExtractorService:
         self.size_sanity_check(ingred_paragraph + instr_paragraph)
         json_response = text_prettifer.process({"ingredients": ingred_paragraph,
                                                 "instructions": instr_paragraph})
-        ingred_paragraph, instr_paragraph = (
-            self.llm_algorithm.extract(str(json_response)))
+
+        try:
+            ingred_paragraph, instr_paragraph = (
+                self.llm_algorithm.extract(str(json_response)))
+
+        except Exception as exc:
+            logging.error(f"llm_algorithm failed becayse: {exc}, falling back to smaller model")
+
 
         self.size_sanity_check(ingred_paragraph + instr_paragraph)
 

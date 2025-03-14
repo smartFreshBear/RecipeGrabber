@@ -16,6 +16,8 @@ class LlmBasedAlgo(ExtractorAlgorithm):
         send a get request to the microservice with the llm
         using the requests library
         """
-        response = requests.get(f"http://{LLM_BASED_ALGO_HOST_AND_PORT}/summarize_recipe", json={"text": text},
+
+        response = requests.get(f"http://{LLM_BASED_ALGO_HOST_AND_PORT}/summarize_recipe",
+                                json={"text": text},
                                 headers={'Cache-Control': 'no-cache'})
         return response.json()["ingredients"], response.json()["instructions"]
